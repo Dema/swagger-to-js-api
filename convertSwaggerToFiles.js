@@ -15,13 +15,31 @@ var chalk = require('chalk')
 module.exports = function (swaggerObj, options) {
   const basePath = swaggerObj.basePath.replace(/\/$/, '')
   const operations = Object.keys(swaggerObj.paths)
-    .map(function (path) {
+    // Paths can have global parameters.
+    // http://swagger.io/specification/#pathsObject
+    .filter(path => path !== 'parameters')
+    .map(path => {
       // flatten the path objects into an array of pathObjects
       return Object.keys(swaggerObj.paths[path])
+        // Paths can have method parameters.
+        // http://swagger.io/specification/#pathsObject
+        .filter(path => path !== 'parameters')
         .map(function (method) {
           var config = swaggerObj.paths[path][method]
           config.method = method
           config.path = basePath + path
+
+          // OperationId is used as a method name, so we need to sanitize it.
+          config.operationId = config.operationId
+            .replace(/ /g, '_')
+            .replace(/\./g, '_')
+
+          // Merge global and method-local parameters.
+          config.parameters = Object.values(Object.assign(
+            config.parameters || {},
+            swaggerObj.paths[path].parameters || {}
+          ))
+
           return config
         })
     })
@@ -74,7 +92,7 @@ ${JSON.stringify(duplicatedOps, null, 2)}
 
   const toFindDuplicates = {}
   Object.keys(swaggerObj.definitions)
-    .map(function (defName) {
+    .map(defName => {
       if (toFindDuplicates[defName.toLowerCase()]) {
 /* eslint-disable */
 console.error(`
