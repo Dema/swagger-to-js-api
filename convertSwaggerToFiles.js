@@ -1,16 +1,16 @@
-let fs = require('fs');
-let path = require('path');
-let pathObjToAST = require('./pathObjToAST');
-let t = require('babel-types');
-let babel = require('babel-core');
-let generate = require('babel-generator').default;
-let es2015 = require('babel-preset-es2015');
-let flow = require('babel-plugin-transform-flow-strip-types');
-let swaggerTypeToFlowType = require('./swaggerTypeToFlowType');
+import fs from 'fs';
+import path from 'path';
+import pathObjToAST from './pathObjToAST';
+import t from 'babel-types';
+import babel from 'babel-core';
+import { default as generate } from 'babel-generator';
+import es2015 from 'babel-preset-es2015';
+import flow from 'babel-plugin-transform-flow-strip-types';
+import swaggerTypeToFlowType from './swaggerTypeToFlowType';
 import { groupBy, uniq } from 'lodash';
-let chalk = require('chalk');
+import chalk from 'chalk';
 
-module.exports = function(swaggerObj, options) {
+export default function(swaggerObj, options) {
   const basePath = swaggerObj.basePath.replace(/\/$/, '');
   const operations = Object
     .keys(swaggerObj.paths)

@@ -1,7 +1,7 @@
 import { includes } from 'lodash';
-let t = require('babel-types');
+import t from 'babel-types';
 
-module.exports = swaggerTypeToFlowType;
+export default swaggerTypeToFlowType;
 
 function swaggerTypeToFlowType(sType, imports) {
   imports = imports || [];

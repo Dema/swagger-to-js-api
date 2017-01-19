@@ -1,8 +1,8 @@
-let t = require('babel-types');
+import t from 'babel-types';
 import { get, assign, isEqual, uniq } from 'lodash';
-let swaggerTypeToFlowType = require('./swaggerTypeToFlowType');
+import swaggerTypeToFlowType from './swaggerTypeToFlowType';
 
-module.exports = function(pathObj) {
+export default function(pathObj) {
   let typeImports = [];
   let imports = [];
   pathObj.parameters = pathObj.parameters || [];

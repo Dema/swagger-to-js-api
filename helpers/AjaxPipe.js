@@ -5,8 +5,6 @@ function AjaxPipe(obj) {
   });
 }
 
-AjaxPipe.prototype.pipeThrough = function(fn) {
-  return fn(this);
-};
+AjaxPipe.prototype.pipeThrough = fn => fn(this);
 
-module.exports = AjaxPipe;
+export default AjaxPipe;

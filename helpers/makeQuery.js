@@ -1,6 +1,6 @@
 /* eslint-disable spaced-comment */
 
-module.exports = function(obj: Object): string {
+export default function(obj: Object): string {
   if (!obj) {
     return '';
   }

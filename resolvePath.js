@@ -1,6 +1,6 @@
-let path = require('path');
+import path from 'path';
 
-module.exports = function(folderPath) {
+export default function(folderPath) {
   if (folderPath[0] === '/' || folderPath[0] === '~') {
     return folderPath;
   }

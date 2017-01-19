@@ -1,12 +1,12 @@
-let parseArgs = require('command-line-args');
-let printUsage = require('command-line-usage');
-let resolvePath = require('./resolvePath');
-let browserify = require('browserify');
-let convertSwaggerToFiles = require('./convertSwaggerToFiles');
-let fs = require('fs');
-let path = require('path');
+import parseArgs from 'command-line-args';
+import printUsage from 'command-line-usage';
+import resolvePath from './resolvePath';
+import browserify from 'browserify';
+import convertSwaggerToFiles from './convertSwaggerToFiles';
+import fs from 'fs';
+import path from 'path';
 import { camelCase } from 'lodash';
-let packageJson = require('./package.json');
+import packageJson from './package.json';
 
 let optionDefs = [
   {

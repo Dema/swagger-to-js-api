@@ -43,4 +43,4 @@ function objectToFormData(
   return formData;
 }
 
-module.exports = objectToFormData;
+export default objectToFormData;
