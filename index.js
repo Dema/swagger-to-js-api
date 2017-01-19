@@ -9,6 +9,11 @@ import fs from 'fs';
 import path from 'path';
 import { camelCase } from 'lodash';
 import packageJson from './package.json';
+import es2015 from 'babel-preset-es2015';
+import stage0 from 'babel-preset-stage-0';
+import react from 'babel-preset-react';
+
+import type { OpenAPI } from 'openapi-flowtype-definition';
 
 let optionDefs = [
   {
@@ -89,11 +94,10 @@ if (!options.name) {
 options.input = resolvePath(options.input);
 
 options.output = resolvePath(options.output);
-let jsonFile = JSON.parse(fs.readFileSync(options.input, 'utf-8'));
+const jsonFile: OpenAPI = JSON.parse(fs.readFileSync(options.input, 'utf-8'));
 convertSwaggerToFiles(jsonFile, options);
-/*
 browserify({ standalone: camelCase(options.name) })
+  .transform('babelify', { presets: [es2015, react, stage0] })
   .add(path.join(options.output, './index.js'))
   .bundle()
   .pipe(fs.createWriteStream(path.join(options.output, './dist/index.js')));
-  */

@@ -1,6 +1,8 @@
-import t from 'babel-types';
+import * as t from 'babel-types';
 import { get, assign, isEqual, uniq } from 'lodash';
 import swaggerTypeToFlowType from './swaggerTypeToFlowType';
+
+/* eslint-disable babel/new-cap */
 
 export default function(pathObj) {
   let typeImports = [];
@@ -21,9 +23,9 @@ export default function(pathObj) {
 
   let responseType = {
     type: 'TypeAlias',
-    id: t.Identifier('Response'),
+    id: t.identifier('Response'),
     typeParameters: null,
-    right: t.AnyTypeAnnotation(),
+    right: t.anyTypeAnnotation(),
   };
 
   if (get(pathObj, 'responses.200.schema')) {
@@ -44,13 +46,13 @@ export default function(pathObj) {
     }
     if (compiled.mode === 'string') {
       compiled.quasis.push(
-        t.TemplateElement({ raw: current, cooked: current }),
+        t.templateElement({ raw: current, cooked: current }),
       );
       return compiled;
     }
     if (compiled.mode === 'variable') {
       urlParams.push(current);
-      compiled.expressions.push(t.Identifier(current));
+      compiled.expressions.push(t.identifier(current));
       return compiled;
     }
     throw new Error('Could not generate url params.');
@@ -78,50 +80,50 @@ export default function(pathObj) {
   }
   // If the endpoint accepts query params, + a queryString at the end of the pathname
   let pathExpression = hasQuery
-    ? t.BinaryExpression(
+    ? t.binaryExpression(
       '+',
-      t.TemplateLiteral(urlParts.quasis, urlParts.expressions),
-      t.CallExpression(t.Identifier('makeQuery'), [ t.Identifier('query') ]),
+      t.templateLiteral(urlParts.quasis, urlParts.expressions),
+      t.callExpression(t.identifier('makeQuery'), [ t.identifier('query') ]),
     )
-    : t.TemplateLiteral(urlParts.quasis, urlParts.expressions);
+    : t.templateLiteral(urlParts.quasis, urlParts.expressions);
 
   // Create the properties that will put on the returned object
   let objectProperties = [
     t.objectProperty(
-      t.Identifier('method'),
-      t.StringLiteral(pathObj.method.toUpperCase()),
+      t.identifier('method'),
+      t.stringLiteral(pathObj.method.toUpperCase()),
     ),
     t.objectProperty(
-      t.Identifier('url'),
-      t.BinaryExpression('+', t.Identifier('hostname'), pathExpression),
+      t.identifier('url'),
+      t.binaryExpression('+', t.identifier('hostname'), pathExpression),
     ),
   ];
 
   // if the endpoint takes a post-body, add that as a key to the object
   if (hasBody) {
     let dataValue = hasFormData
-      ? t.CallExpression(t.Identifier('makeFormData'), [ t.Identifier('data') ])
-      : t.Identifier('data');
+      ? t.callExpression(t.identifier('makeFormData'), [ t.identifier('data') ])
+      : t.identifier('data');
 
-    objectProperties.push(t.objectProperty(t.Identifier('data'), dataValue));
+    objectProperties.push(t.objectProperty(t.identifier('data'), dataValue));
   }
 
   // the body of the function.
   // Take the object prepared so far and use it to initialize a AjaxPipe.
   // AjaxPipe will be used to maintain the types for response objects.
   // Soon.
-  let body = t.BlockStatement([
-    t.ReturnStatement(
-      t.NewExpression(t.Identifier('AjaxPipe'), [
-        t.ObjectExpression(objectProperties),
+  let body = t.blockStatement([
+    t.returnStatement(
+      t.newExpression(t.identifier('AjaxPipe'), [
+        t.objectExpression(objectProperties),
       ]),
     ),
   ]);
 
-  let hostnameParam = t.Identifier('hostname');
-  hostnameParam.typeAnnotation = t.TypeAnnotation(t.StringTypeAnnotation());
-  let queryParam = hasQuery ? t.Identifier('query') : [];
-  let bodyParam = hasBody ? t.Identifier('data') : [];
+  let hostnameParam = t.identifier('hostname');
+  hostnameParam.typeAnnotation = t.typeAnnotation(t.stringTypeAnnotation());
+  let queryParam = hasQuery ? t.identifier('query') : [];
+  let bodyParam = hasBody ? t.identifier('data') : [];
 
   if (hasQuery) {
     const typeDef = {
@@ -131,7 +133,7 @@ export default function(pathObj) {
         .map(param => ({ [param.name]: param }))
         .reduce((obj, current) => Object.assign(obj, current), {}),
     };
-    queryParam.typeAnnotation = t.TypeAnnotation(
+    queryParam.typeAnnotation = t.typeAnnotation(
       swaggerTypeToFlowType(typeDef, typeImports),
     );
   }
@@ -145,15 +147,15 @@ export default function(pathObj) {
           .map(param => ({ [param.name]: param }))
           .reduce((obj, current) => Object.assign(obj, current), {}),
       };
-      bodyParam.typeAnnotation = t.TypeAnnotation(
+      bodyParam.typeAnnotation = t.typeAnnotation(
         swaggerTypeToFlowType(typeDef, typeImports),
       );
     } else if (bodyParamJson.schema) {
-      bodyParam.typeAnnotation = t.TypeAnnotation(
+      bodyParam.typeAnnotation = t.typeAnnotation(
         swaggerTypeToFlowType(bodyParamJson.schema, typeImports),
       );
     } else if (bodyParamJson.type) {
-      bodyParam.typeAnnotation = t.TypeAnnotation(
+      bodyParam.typeAnnotation = t.typeAnnotation(
         swaggerTypeToFlowType(bodyParamJson, typeImports),
       );
     }
@@ -163,8 +165,8 @@ export default function(pathObj) {
   // always accept a hostname.
   // accept all path params as individual arguments
   // also accept `query` and `data` as the last two arguments if API accepts
-  let fnStatement = t.FunctionDeclaration(
-    t.Identifier(pathObj.operationId),
+  let fnStatement = t.functionDeclaration(
+    t.identifier(pathObj.operationId),
     [ hostnameParam ]
       .concat(
         pathObj.parameters
@@ -176,39 +178,39 @@ export default function(pathObj) {
     body,
   );
 
-  fnStatement.returnType = t.TypeAnnotation(
-    t.GenericTypeAnnotation(
-      t.Identifier('AjaxPipe'),
-      t.TypeParameterInstantiation([
-        t.GenericTypeAnnotation(t.Identifier('AjaxObject'), null),
-        t.GenericTypeAnnotation(t.Identifier('Response'), null),
+  fnStatement.returnType = t.typeAnnotation(
+    t.genericTypeAnnotation(
+      t.identifier('AjaxPipe'),
+      t.typeParameterInstantiation([
+        t.genericTypeAnnotation(t.identifier('AjaxObject'), null),
+        t.genericTypeAnnotation(t.identifier('Response'), null),
       ]),
     ),
   );
 
-  let fn = t.ExportDefaultDeclaration(fnStatement);
+  let fn = t.exportDefaultDeclaration(fnStatement);
 
   // declare imports for the helpers that are used in the function.
   if (hasQuery) {
     imports.push(
-      t.ImportDeclaration(
-        [ t.ImportDefaultSpecifier(t.Identifier('makeQuery')) ],
-        t.StringLiteral('../helpers/makeQuery'),
+      t.importDeclaration(
+        [ t.importDefaultSpecifier(t.identifier('makeQuery')) ],
+        t.stringLiteral('../helpers/makeQuery'),
       ),
     );
   }
   if (hasFormData) {
     imports.push(
-      t.ImportDeclaration(
-        [ t.ImportDefaultSpecifier(t.Identifier('makeFormData')) ],
-        t.StringLiteral('../helpers/makeFormData'),
+      t.importDeclaration(
+        [ t.importDefaultSpecifier(t.identifier('makeFormData')) ],
+        t.stringLiteral('../helpers/makeFormData'),
       ),
     );
   }
   imports.push(
-    t.ImportDeclaration(
-      [ t.ImportDefaultSpecifier(t.Identifier('AjaxPipe')) ],
-      t.StringLiteral('../helpers/AjaxPipe'),
+    t.importDeclaration(
+      [ t.importDefaultSpecifier(t.identifier('AjaxPipe')) ],
+      t.stringLiteral('../helpers/AjaxPipe'),
     ),
   );
 
@@ -216,9 +218,9 @@ export default function(pathObj) {
   // and returns it along with the name of the function so it can be written to
   // a file.
   typeImports = uniq(typeImports).map(name => {
-    let importStatement = t.ImportDeclaration(
-      [ t.ImportSpecifier(t.Identifier(name), t.Identifier(name)) ],
-      t.StringLiteral(`../types/${name}`),
+    let importStatement = t.importDeclaration(
+      [ t.importSpecifier(t.identifier(name), t.identifier(name)) ],
+      t.stringLiteral(`../types/${name}`),
     );
     importStatement.importKind = 'type';
 
@@ -226,20 +228,20 @@ export default function(pathObj) {
   });
   return [
     pathObj.operationId,
-    t.Program(
+    t.program(
       imports.concat(typeImports).concat([ responseType ]).concat([ fn ]),
     ),
   ];
 };
 
 function paramToName(param) {
-  let paramName = t.Identifier(param.name);
+  let paramName = t.identifier(param.name);
   if (param.schema) {
-    paramName.typeAnnotation = t.TypeAnnotation(
+    paramName.typeAnnotation = t.typeAnnotation(
       swaggerTypeToFlowType(param.schema),
     );
   } else if (param.type) {
-    paramName.typeAnnotation = t.TypeAnnotation(swaggerTypeToFlowType(param));
+    paramName.typeAnnotation = t.typeAnnotation(swaggerTypeToFlowType(param));
   }
   return paramName;
 }

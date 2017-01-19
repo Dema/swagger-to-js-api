@@ -1,9 +1,14 @@
 /* @flow */
 
 import { includes } from 'lodash';
-import t from 'babel-types';
+import * as t from 'babel-types';
 
-export default swaggerTypeToFlowType = (sType, imports) => {
+/* eslint-disable babel/new-cap */
+
+const swaggerTypeToFlowType = (
+  sType: Object,
+  imports: Array<Object>,
+) => {
   imports = imports || [];
   if (sType.$ref && sType.$ref.match(/^#\/definitions/)) {
     imports.push(sType.$ref.replace('#/definitions/', ''));
@@ -17,15 +22,15 @@ export default swaggerTypeToFlowType = (sType, imports) => {
   } else if (sType.type === 'array') {
     return arrayTypeToFlow(sType, imports);
   } else if (sType.type === 'string') {
-    return t.StringTypeAnnotation();
+    return t.stringTypeAnnotation();
   } else if (
     sType.type === 'integer' || sType.type === 'float' || sType.type === 'int64'
   ) {
-    return t.NumberTypeAnnotation();
+    return t.numberTypeAnnotation();
   } else if (sType.type === 'boolean') {
-    return t.BooleanTypeAnnotation();
+    return t.booleanTypeAnnotation();
   } else {
-    return t.AnyTypeAnnotation();
+    return t.anyTypeAnnotation();
   }
 };
 
@@ -71,3 +76,5 @@ function arrayTypeToFlow(arrayType, imports) {
       : t.TypeParameterInstantiation([ t.AnyTypeAnnotation() ]),
   );
 }
+
+export default swaggerTypeToFlowType;

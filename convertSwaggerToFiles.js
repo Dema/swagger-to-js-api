@@ -4,8 +4,8 @@ import fs from 'fs';
 import mkdirp from 'mkdirp';
 import path from 'path';
 import pathObjToAST from './pathObjToAST';
-import t from 'babel-types';
-import babel from 'babel-core';
+import * as t from 'babel-types';
+import * as babel from 'babel-core';
 import { default as generate } from 'babel-generator';
 import es2015 from 'babel-preset-es2015';
 import stage0 from 'babel-preset-stage-0';
@@ -16,10 +16,12 @@ import swaggerTypeToFlowType from './swaggerTypeToFlowType';
 import { groupBy, uniq } from 'lodash';
 import chalk from 'chalk';
 
+import type { OpenAPI } from 'openapi-flowtype-definition';
+
 /* eslint-disable babel/new-cap */
 
-export default function(swaggerObj: Object, options: Object) {
-  const basePath = swaggerObj.basePath.replace(/\/$/, '');
+export default function(swaggerObj: OpenAPI, options: Object) {
+  const basePath = (swaggerObj.basePath || '').replace(/\/$/, '');
   const operations = Object
     .keys(swaggerObj.paths)
     .filter(p => p !== 'parameters')
@@ -29,7 +31,7 @@ export default function(swaggerObj: Object, options: Object) {
         .keys(swaggerObj.paths[urlPath])
         .filter(p => p !== 'parameters')
         .map(method => {
-          let config = swaggerObj.paths[urlPath][method];
+          const config = swaggerObj.paths[urlPath][method];
           config.method = method;
           config.path = basePath + urlPath;
 
@@ -145,7 +147,7 @@ like the one on macOS.
       let name = tuple[0];
       let typeAst = tuple[1];
       let imports = uniq(tuple[2]);
-      let mainExport = t.ExportNamedDeclaration(
+      let mainExport = t.exportNamedDeclaration(
         {
           type: 'TypeAlias',
           id: t.Identifier(name),
