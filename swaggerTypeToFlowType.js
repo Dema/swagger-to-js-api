@@ -32,7 +32,7 @@ const swaggerTypeToFlowType = (
   }
 };
 
-function objectTypeToFlow(objectType, imports) {
+const objectTypeToFlow = (objectType, imports) => {
   if (!objectType.properties) {
     return t.genericTypeAnnotation(t.identifier('Object'), null);
   }
@@ -62,9 +62,9 @@ function objectTypeToFlow(objectType, imports) {
   retVal.exact = true;
 
   return retVal;
-}
+};
 
-function arrayTypeToFlow(arrayType, imports) {
+const arrayTypeToFlow = (arrayType, imports) => {
   return t.genericTypeAnnotation(
     t.identifier('Array'),
     arrayType.items
@@ -73,6 +73,6 @@ function arrayTypeToFlow(arrayType, imports) {
       ])
       : t.typeParameterInstantiation([ t.anyTypeAnnotation() ]),
   );
-}
+};
 
 export default swaggerTypeToFlowType;
