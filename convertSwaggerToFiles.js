@@ -16,11 +16,12 @@ import swaggerTypeToFlowType from './swaggerTypeToFlowType';
 import { groupBy, uniq } from 'lodash';
 import chalk from 'chalk';
 
+import type { CliOptions } from './index';
 import type { OpenAPI } from 'openapi-flowtype-definition';
 
 /* eslint-disable babel/new-cap */
 
-export default function(swaggerObj: OpenAPI, options: Object) {
+export default function(swaggerObj: OpenAPI, options: CliOptions) {
   const basePath = (swaggerObj.basePath || '').replace(/\/$/, '');
   const operations = Object
     .keys(swaggerObj.paths)

@@ -15,7 +15,16 @@ import react from 'babel-preset-react';
 
 import type { OpenAPI } from 'openapi-flowtype-definition';
 
-let optionDefs = [
+export type CliOptions = {
+  input: string,
+  output: string,
+  force: boolean,
+  name: string,
+  version: string,
+  help?: boolean,
+}
+
+const optionDefs = [
   {
     name: 'input',
     alias: 'i',
@@ -55,7 +64,7 @@ let optionDefs = [
   },
 ];
 
-let usageGuide = [
+const usageGuide = [
   {
     header: 'Swagger to Javascript API generator',
     content: 'Takes a Swagger JSON file and generates UMD NPM and bower package to be used in Javascript applications.',
@@ -63,7 +72,7 @@ let usageGuide = [
   { header: 'Options', optionList: optionDefs },
 ];
 
-const options = parseArgs(optionDefs);
+const options: CliOptions = parseArgs(optionDefs);
 
 options.version = options.version ||
   `1.0.${process.env.BUILD_NUMBER || Math.floor(Math.random() * 1000)}`;
