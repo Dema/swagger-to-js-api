@@ -1,3 +1,5 @@
+/* @flow */
+import 'babel-polyfill';
 import parseArgs from 'command-line-args';
 import printUsage from 'command-line-usage';
 import resolvePath from './resolvePath';
@@ -83,7 +85,9 @@ options.input = resolvePath(options.input);
 options.output = resolvePath(options.output);
 let jsonFile = JSON.parse(fs.readFileSync(options.input, 'utf-8'));
 convertSwaggerToFiles(jsonFile, options);
+/*
 browserify({ standalone: camelCase(options.name) })
   .add(path.join(options.output, './index.js'))
   .bundle()
   .pipe(fs.createWriteStream(path.join(options.output, './dist/index.js')));
+  */

@@ -5,6 +5,9 @@ import t from 'babel-types';
 import babel from 'babel-core';
 import { default as generate } from 'babel-generator';
 import es2015 from 'babel-preset-es2015';
+import stage0 from 'babel-preset-stage-0';
+import react from 'babel-preset-react';
+
 import flow from 'babel-plugin-transform-flow-strip-types';
 import swaggerTypeToFlowType from './swaggerTypeToFlowType';
 import { groupBy, uniq } from 'lodash';
@@ -196,7 +199,7 @@ like the one on macOS.
   paths
     .map(([ name, code ]) => [
       name,
-      babel.transform(code, { presets: [ es2015 ], plugins: [ flow ] }).code,
+      babel.transform(code, { presets: [ react, es2015, stage0 ], plugins: [ flow ] }).code,
     ])
     .forEach(arr => {
       let name = arr[0];
