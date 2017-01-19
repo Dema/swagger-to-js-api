@@ -9,7 +9,7 @@ let generate = require('babel-generator').default;
 let es2015 = require('babel-preset-es2015');
 let flow = require('babel-plugin-transform-flow-strip-types');
 let swaggerTypeToFlowType = require('./swaggerTypeToFlowType');
-let _ = require('lodash');
+import { groupBy, uniq } from 'lodash';
 let chalk = require('chalk');
 
 module.exports = function (swaggerObj, options) {
@@ -24,7 +24,7 @@ module.exports = function (swaggerObj, options) {
         // Paths can have method parameters.
         // http://swagger.io/specification/#pathsObject
         .filter(path => path !== 'parameters')
-        .map(function (method) {
+        .map(method => {
           let config = swaggerObj.paths[path][method];
           config.method = method;
           config.path = basePath + path;
@@ -43,11 +43,9 @@ module.exports = function (swaggerObj, options) {
           return config;
         });
     })
-    .reduce(function (soFar, current) {
-      return soFar.concat(current);
-    }, []);
+    .reduce((soFar, current) => soFar.concat(current), []);
 
-  const operationIds = _.groupBy(operations, 'operationId');
+  const operationIds = groupBy(operations, 'operationId');
   const duplicatedOps = Object.keys(operationIds)
     .filter(key => operationIds[key].length > 1);
 
@@ -106,7 +104,7 @@ like the one on macOS.
       toFindDuplicates[defName.toLowerCase()] = true;
       return Object.assign(swaggerObj.definitions[defName], { name: defName });
     })
-    .map(function (typeDef) {
+    .map(typeDef => {
       let name = typeDef.name;
       let imports = [];
       return [
@@ -115,10 +113,10 @@ like the one on macOS.
         imports,
       ];
     })
-    .map(function (tuple) {
+    .map(tuple => {
       let name = tuple[0];
       let typeAst = tuple[1];
-      let imports = _.uniq(tuple[2]);
+      let imports = uniq(tuple[2]);
       let mainExport = t.ExportNamedDeclaration(
         {
           type: 'TypeAlias',
@@ -129,10 +127,10 @@ like the one on macOS.
         []
       );
       let program = t.Program(
-        imports.map(function (name) {
+        imports.map(name => {
           let importStatement = t.ImportDeclaration(
             [t.ImportSpecifier(t.Identifier(name), t.Identifier(name))],
-            t.StringLiteral('./' + name)
+            t.StringLiteral(`./${name}`)
           );
           importStatement.importKind = 'type';
 
@@ -141,25 +139,25 @@ like the one on macOS.
       );
       return [name, program];
     })
-    .map(function (tuple, i) {
+    .map((tuple, i) => {
       let name = tuple[0];
       let ast = tuple[1];
       return [name, generate(ast, { quotes: 'single' }).code];
     })
-    .forEach(function (tuple) {
+    .forEach(tuple => {
       let name = tuple[0];
       console.log(':: ', name);
       let code = tuple[1];
       fs.writeFileSync(
-        path.join(options.output, 'types/', name + '.js'),
-        '// @flow\n\n' + code,
+        path.join(options.output, 'types/', `${name}.js`),
+        `// @flow\n\n${code}`,
         'utf-8'
       );
     });
 
   let paths = operations
     .map(pathObjToAST)
-    .map(function (arr) {
+    .map(arr => {
       let name = arr[0];
       let ast = arr[1];
       return [name, generate(ast, { quotes: 'single' }).code];
@@ -167,11 +165,11 @@ like the one on macOS.
 
   paths
   .forEach(
-    function (arr) {
+    arr => {
       let name = arr[0];
       let code = arr[1];
       fs.writeFileSync(
-        path.join(options.output, 'src/', name + '.js.flow'),
+        path.join(options.output, 'src/', `${name}.js.flow`),
         `// @flow\n\nimport type {AjaxObject} from '../types/AjaxObject';\n${code}\n`,
         'utf-8'
       );
@@ -179,30 +177,31 @@ like the one on macOS.
   );
 
   paths
-    .map(([name, code]) => [name, babel.transform(code, {
-      presets: [es2015], plugins: [flow],
-    }).code])
+    .map((
+    [name, code],
+  ) => [
+    name,
+    babel.transform(code, {
+        presets: [es2015], plugins: [flow],
+      }).code,
+  ])
     .forEach(
-      function (arr) {
+      arr => {
         let name = arr[0];
         let code = arr[1];
         fs.writeFileSync(
-          path.join(options.output, 'src/', name + '.js'),
-          code + '\n',
+          path.join(options.output, 'src/', `${name}.js`),
+          `${code}\n`,
           'utf-8'
         );
       }
     );
 
-  let indexFile = _.uniq(paths.map(function (arr) {
-    return arr[0]; 
-  }))
-    .map(function (name) {
-      return `${name}: require('./src/${name}.js').default`; 
-    })
+  let indexFile = uniq(paths.map(arr => arr[0]))
+    .map(name => `${name}: require('./src/${name}.js').default`)
     .join(',\n  ');
 
-  indexFile = '// @flow\n\nmodule.exports = {\n  ' + indexFile + '\n}\n';
+  indexFile = `// @flow\n\nmodule.exports = {\n  ${indexFile}\n}\n`;
 
   fs.writeFileSync(
     path.join(options.output, 'index.js'),

@@ -1,6 +1,6 @@
 
 
-let _ = require('lodash');
+import { includes } from 'lodash';
 let t = require('babel-types');
 
 module.exports = swaggerTypeToFlowType;
@@ -35,19 +35,17 @@ function objectTypeToFlow (objectType, imports) {
   }
 
   let properties = Object.keys(objectType.properties)
-    .map(function (propName) {
-      return Object.assign(objectType.properties[propName], { name: propName });
-    });
+    .map(propName => Object.assign(objectType.properties[propName], { name: propName }));
 
   let required = objectType.required || [];
 
   let retVal = t.ObjectTypeAnnotation(
-    properties.map(function (prop) {
+    properties.map(prop => {
       let propertyDef = t.ObjectTypeProperty(
         t.Identifier(prop.name),
         swaggerTypeToFlowType(prop, imports)
       );
-      if (!_.includes(required, prop.name)) {
+      if (!includes(required, prop.name)) {
         propertyDef.optional = true;
       }
       return propertyDef;

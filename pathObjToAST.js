@@ -1,25 +1,17 @@
 
 
 let t = require('babel-types');
-let _ = require('lodash');
+import { get, assign, isEqual, uniq } from 'lodash';
 let swaggerTypeToFlowType = require('./swaggerTypeToFlowType');
 
 module.exports = function (pathObj) {
   let typeImports = [];
   let imports = [];
   pathObj.parameters = pathObj.parameters || [];
-  let hasQuery = !!(pathObj.parameters || []).filter(function (param) {
-    return param.in === 'query'; 
-  }).length;
-  let bodyParamJson = (pathObj.parameters || []).filter(function (param) {
-    return param.in === 'body' && param.name === 'body'; 
-  })[0];
-  let hasFormData = !!(pathObj.parameters || []).filter(function (param) {
-    return param.in === 'formData'; 
-  }).length;
-  let hasBody = !!(pathObj.parameters || []).filter(function (param) {
-    return param.in === 'formData' || param.in === 'body'; 
-  }).length;
+  let hasQuery = !!(pathObj.parameters || []).filter(param => param.in === 'query').length;
+  let bodyParamJson = (pathObj.parameters || []).filter(param => param.in === 'body' && param.name === 'body')[0];
+  let hasFormData = !!(pathObj.parameters || []).filter(param => param.in === 'formData').length;
+  let hasBody = !!(pathObj.parameters || []).filter(param => param.in === 'formData' || param.in === 'body').length;
 
   let responseType = {
     type: 'TypeAlias',
@@ -28,19 +20,19 @@ module.exports = function (pathObj) {
     right: t.AnyTypeAnnotation(),
   };
 
-  if (_.get(pathObj, 'responses.200.schema')) {
-    responseType.right = swaggerTypeToFlowType(_.get(pathObj, 'responses.200.schema'), typeImports);
+  if (get(pathObj, 'responses.200.schema')) {
+    responseType.right = swaggerTypeToFlowType(get(pathObj, 'responses.200.schema'), typeImports);
   }
 
   // prepare a template string for the URL that may contain 0 or more url params
   let urlParams = [];
   let urlParts = pathObj.path.split(/(\}|\{)/)
-    .reduce(function (compiled, current) {
+    .reduce((compiled, current) => {
       if (current === '{') {
-        return _.assign({}, compiled, { mode: 'variable' });
+        return assign({}, compiled, { mode: 'variable' });
       }
       if (current === '}') {
-        return _.assign({}, compiled, { mode: 'string' });
+        return assign({}, compiled, { mode: 'string' });
       }
       if (compiled.mode === 'string') {
         compiled.quasis.push(t.TemplateElement({ raw: current, cooked: current }));
@@ -60,7 +52,7 @@ module.exports = function (pathObj) {
   let paramsUsed = urlParams.sort();
   let paramsProvided = pathParams.sort();
 
-  if (!_.isEqual(paramsUsed, paramsProvided)) {
+  if (!isEqual(paramsUsed, paramsProvided)) {
     throw new Error(`
       There is a problem in the operation ${pathObj.operationId}.
 
@@ -203,10 +195,10 @@ module.exports = function (pathObj) {
   // Create a AST object for `Program` that includes the imports and function
   // and returns it along with the name of the function so it can be written to
   // a file.
-  typeImports = _.uniq(typeImports).map(function (name) {
+  typeImports = uniq(typeImports).map(name => {
     let importStatement = t.ImportDeclaration(
       [t.ImportSpecifier(t.Identifier(name), t.Identifier(name))],
-      t.StringLiteral('../types/' + name)
+      t.StringLiteral(`../types/${name}`)
     );
     importStatement.importKind = 'type';
 

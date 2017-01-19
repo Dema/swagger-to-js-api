@@ -7,7 +7,7 @@ let browserify = require('browserify');
 let convertSwaggerToFiles = require('./convertSwaggerToFiles');
 let fs = require('fs');
 let path = require('path');
-let _ = require('lodash');
+import { camelCase } from 'lodash';
 let packageJson = require('./package.json');
 
 let optionDefs = [
@@ -31,10 +31,10 @@ let usageGuide = [
 
 let options = parseArgs(optionDefs);
 
-options.version = options.version || '1.0.' + (process.env.BUILD_NUMBER || Math.floor(Math.random() * 1000));
+options.version = options.version || `1.0.${process.env.BUILD_NUMBER || Math.floor(Math.random() * 1000)}`;
 
 if (options.help) {
-  console.log('swagger-to-js-api — v' + packageJson.version);
+  console.log(`swagger-to-js-api — v${packageJson.version}`);
   console.log(printUsage(usageGuide));
   process.exit(1);
 }
@@ -60,7 +60,7 @@ options.output = resolvePath(options.output);
 let jsonFile = JSON.parse(fs.readFileSync(options.input, 'utf-8'));
 convertSwaggerToFiles(jsonFile, options);
 
-browserify({ standalone: _.camelCase(options.name) })
+browserify({ standalone: camelCase(options.name) })
   .add(path.join(options.output, './index.js'))
   .bundle()
   .pipe(fs.createWriteStream(path.join(options.output, './dist/index.js')));
