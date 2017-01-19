@@ -24,6 +24,12 @@ let optionDefs = [
     type: String,
   },
   {
+    name: 'force',
+    alias: 'f',
+    description: 'Overwrites output if it already exists.',
+    type: Boolean,
+  },
+  {
     name: 'name',
     alias: 'n',
     description: 'Name for the generated package',
@@ -52,7 +58,7 @@ let usageGuide = [
   { header: 'Options', optionList: optionDefs },
 ];
 
-let options = parseArgs(optionDefs);
+const options = parseArgs(optionDefs);
 
 options.version = options.version ||
   `1.0.${process.env.BUILD_NUMBER || Math.floor(Math.random() * 1000)}`;

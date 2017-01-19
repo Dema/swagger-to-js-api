@@ -1,9 +1,9 @@
+/* @flow */
+
 import { includes } from 'lodash';
 import t from 'babel-types';
 
-export default swaggerTypeToFlowType;
-
-function swaggerTypeToFlowType(sType, imports) {
+export default swaggerTypeToFlowType = (sType, imports) => {
   imports = imports || [];
   if (sType.$ref && sType.$ref.match(/^#\/definitions/)) {
     imports.push(sType.$ref.replace('#/definitions/', ''));
@@ -27,7 +27,7 @@ function swaggerTypeToFlowType(sType, imports) {
   } else {
     return t.AnyTypeAnnotation();
   }
-}
+};
 
 function objectTypeToFlow(objectType, imports) {
   if (!objectType.properties) {

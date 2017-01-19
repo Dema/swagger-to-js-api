@@ -1,4 +1,7 @@
+/* @flow */
+
 import fs from 'fs';
+import mkdirp from 'mkdirp';
 import path from 'path';
 import pathObjToAST from './pathObjToAST';
 import t from 'babel-types';
@@ -15,7 +18,7 @@ import chalk from 'chalk';
 
 /* eslint-disable babel/new-cap */
 
-export default function(swaggerObj, options) {
+export default function(swaggerObj: Object, options: Object) {
   const basePath = swaggerObj.basePath.replace(/\/$/, '');
   const operations = Object
     .keys(swaggerObj.paths)
@@ -77,10 +80,10 @@ ${JSON.stringify(duplicatedOps, null, 2)}
     }
   });
 
-  fs.mkdirSync(path.join(options.output, 'src/'));
-  fs.mkdirSync(path.join(options.output, 'helpers/'));
-  fs.mkdirSync(path.join(options.output, 'types/'));
-  fs.mkdirSync(path.join(options.output, 'dist/'));
+  mkdirp.sync(path.join(options.output, 'src/'));
+  mkdirp.sync(path.join(options.output, 'helpers/'));
+  mkdirp.sync(path.join(options.output, 'types/'));
+  mkdirp.sync(path.join(options.output, 'dist/'));
   fs.writeFileSync(
     path.join(options.output, 'helpers/', 'AjaxPipe.js'),
     fs.readFileSync(path.join(__dirname, './helpers/', 'AjaxPipe.js'), 'utf-8'),
