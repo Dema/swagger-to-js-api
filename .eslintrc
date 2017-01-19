@@ -1,4 +1,93 @@
-{
-  "parser": "babel-eslint",
-  "extends": ["standard"]
-}
+---
+parser: babel-eslint
+
+plugins:
+  - react
+  - babel
+  - flowtype
+
+env:
+  es6: true
+  jest: true
+
+parserOptions:
+  ecmaVersion: 7
+  sourceType: "module"
+  ecmaFeatures:
+    arrowFunctions: true
+    blockBindings: true
+    classes: true
+    destructuring: true
+    generators: true
+    modules: true
+    spread: true
+    suprtInFunctions: true
+    templateStrings: true
+
+
+# We're stricter than the default config, mostly. We'll override a few rules and
+# then enable some React specific ones.
+rules:
+  accessor-pairs: 0
+  brace-style: [2, 1tbs]
+  comma-dangle: [2, always-multiline]
+  consistent-return: 2
+  dot-location: [2, property]
+  dot-notation: 2
+  eol-last: 2
+  indent: [2, 2, {SwitchCase: 1}]
+  jsx-quotes: [2, prefer-double]
+  no-bitwise: 0
+  no-alert: 2
+  no-debugger: 2
+  no-dupe-class-members: 2
+  no-multi-spaces: 2
+  no-restricted-syntax: [2, WithStatement]
+  no-shadow: 2
+  no-unused-expressions: 2
+  no-unused-vars: [2, {args: none, varsIgnorePattern: ^_}]
+  no-var: 2
+  quotes: [2, single, {"avoidEscape": true, "allowTemplateLiterals": true}]
+  keyword-spacing: 2
+  space-before-blocks: 2
+  strict: [2, global]
+  semi: 2
+
+  # JSX
+  # Our transforms set this automatically
+  react/display-name: 0
+  react/jsx-boolean-value: [2, always]
+  react/jsx-no-undef: 2
+  # We don't care to do this
+  react/jsx-sort-prop-types: 0
+  react/jsx-sort-props: 0
+  react/jsx-uses-react: 2
+  react/jsx-uses-vars: 2
+  # It's easier to test some things this way
+  # react/no-did-mount-set-state: 0
+  # react/no-did-update-set-state: 0
+  # We define multiple components in test files
+  # react/no-multi-comp: 0
+  react/no-unknown-property: 2
+  # This isn't useful in our test code
+  react/prop-types: 0
+  react/react-in-jsx-scope: 2
+  react/self-closing-comp: 2
+  # We don't care to do this
+  react/sort-comp: 1
+  react/wrap-multilines: [2, {declaration: false, assignment: false}]
+
+  # eslint-plugin-babel
+  babel/generator-star-spacing: 0
+  babel/new-cap: 1
+  babel/array-bracket-spacing: 1
+  babel/object-curly-spacing: [1, "always"]
+  babel/object-shorthand: 1
+  babel/no-await-in-loop: 1
+  babel/flow-object-type: [1, "comma"]
+  # babel/arrow-parens: [1, "as-needed"]
+
+  # eslint-plugin-flowtype
+  flowtype/space-after-type-colon: [1, "always"]
+  flowtype/define-flow-type: 1
+  flowtype/use-flow-type: 1
