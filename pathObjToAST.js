@@ -53,6 +53,7 @@ export default function(pathObj) {
       compiled.expressions.push(t.Identifier(current));
       return compiled;
     }
+    throw new Error('Could not generate url params.');
   }, { quasis: [], expressions: [], mode: 'string' });
 
   let pathParams = pathObj.parameters
