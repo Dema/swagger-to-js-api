@@ -1,62 +1,62 @@
-'use strict'
 
-var _ = require('lodash')
-var t = require('babel-types')
 
-module.exports = swaggerTypeToFlowType
+let _ = require('lodash');
+let t = require('babel-types');
+
+module.exports = swaggerTypeToFlowType;
 
 function swaggerTypeToFlowType (sType, imports) {
-  imports = imports || []
+  imports = imports || [];
   if (sType.$ref && sType.$ref.match(/^#\/definitions/)) {
-    imports.push(sType.$ref.replace('#/definitions/', ''))
+    imports.push(sType.$ref.replace('#/definitions/', ''));
     return t.GenericTypeAnnotation(
       t.Identifier(sType.$ref.replace('#/definitions/', '')),
       null
-    )
+    );
   }
   if (sType.type === 'object') {
-    return objectTypeToFlow(sType, imports)
+    return objectTypeToFlow(sType, imports);
   } else if (sType.type === 'array') {
-    return arrayTypeToFlow(sType, imports)
+    return arrayTypeToFlow(sType, imports);
   } else if (sType.type === 'string') {
-    return t.StringTypeAnnotation()
+    return t.StringTypeAnnotation();
   } else if (sType.type === 'integer' || sType.type === 'float' || sType.type === 'int64') {
-    return t.NumberTypeAnnotation()
+    return t.NumberTypeAnnotation();
   } else if (sType.type === 'boolean') {
-    return t.BooleanTypeAnnotation()
+    return t.BooleanTypeAnnotation();
   } else {
-    return t.AnyTypeAnnotation()
+    return t.AnyTypeAnnotation();
   }
 }
 
 function objectTypeToFlow (objectType, imports) {
   if (!objectType.properties) {
-    return t.GenericTypeAnnotation(t.Identifier('Object'), null)
+    return t.GenericTypeAnnotation(t.Identifier('Object'), null);
   }
 
-  var properties = Object.keys(objectType.properties)
+  let properties = Object.keys(objectType.properties)
     .map(function (propName) {
-      return Object.assign(objectType.properties[propName], {name: propName})
-    })
+      return Object.assign(objectType.properties[propName], { name: propName });
+    });
 
-  var required = objectType.required || []
+  let required = objectType.required || [];
 
-  var retVal = t.ObjectTypeAnnotation(
+  let retVal = t.ObjectTypeAnnotation(
     properties.map(function (prop) {
-      var propertyDef = t.ObjectTypeProperty(
+      let propertyDef = t.ObjectTypeProperty(
         t.Identifier(prop.name),
         swaggerTypeToFlowType(prop, imports)
-      )
+      );
       if (!_.includes(required, prop.name)) {
-        propertyDef.optional = true
+        propertyDef.optional = true;
       }
-      return propertyDef
+      return propertyDef;
     })
-  )
+  );
 
-  retVal.exact = true
+  retVal.exact = true;
 
-  return retVal
+  return retVal;
 }
 
 function arrayTypeToFlow (arrayType, imports) {
@@ -65,5 +65,5 @@ function arrayTypeToFlow (arrayType, imports) {
     arrayType.items
       ? t.TypeParameterInstantiation([swaggerTypeToFlowType(arrayType.items, imports)])
       : t.TypeParameterInstantiation([t.AnyTypeAnnotation()])
-  )
+  );
 }

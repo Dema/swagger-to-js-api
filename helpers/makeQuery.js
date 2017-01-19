@@ -1,23 +1,23 @@
 /* eslint-disable spaced-comment */
-'use strict'
+
 
 module.exports = function (obj/*: Object*/)/*: string*/ {
   if (!obj) {
-    return ''
+    return '';
   }
 
-  var keys = Object.keys(obj)
+  let keys = Object.keys(obj);
   if (!keys.length) {
-    return ''
+    return '';
   }
 
   return '?' +
     keys.map(function (key) {
-      var value = obj[key]
+      let value = obj[key];
       if (typeof value === 'object') {
-        value = JSON.stringify(value)
+        value = JSON.stringify(value);
       }
-      return encodeURIComponent(key) + '=' + encodeURIComponent(value)
+      return encodeURIComponent(key) + '=' + encodeURIComponent(value);
     })
-    .join('&')
-}
+    .join('&');
+};

@@ -1,15 +1,15 @@
-'use strict'
+
 
 function AjaxPipe (obj) {
-  var that = this
+  let that = this;
   Object.keys(obj)
     .forEach(function (key) {
-      that[key] = obj[key]
-    })
+      that[key] = obj[key];
+    });
 }
 
 AjaxPipe.prototype.pipeThrough = function (fn) {
-  return fn(this)
-}
+  return fn(this);
+};
 
-module.exports = AjaxPipe
+module.exports = AjaxPipe;
