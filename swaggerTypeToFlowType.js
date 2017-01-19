@@ -3,8 +3,6 @@
 import { includes } from 'lodash';
 import * as t from 'babel-types';
 
-/* eslint-disable babel/new-cap */
-
 const swaggerTypeToFlowType = (
   sType: Object,
   imports: Array<string> = [],
@@ -12,8 +10,8 @@ const swaggerTypeToFlowType = (
 
   if (sType.$ref && sType.$ref.match(/^#\/definitions/)) {
     imports.push(sType.$ref.replace('#/definitions/', ''));
-    return t.GenericTypeAnnotation(
-      t.Identifier(sType.$ref.replace('#/definitions/', '')),
+    return t.genericTypeAnnotation(
+      t.identifier(sType.$ref.replace('#/definitions/', '')),
       null,
     );
   }
@@ -36,7 +34,7 @@ const swaggerTypeToFlowType = (
 
 function objectTypeToFlow(objectType, imports) {
   if (!objectType.properties) {
-    return t.GenericTypeAnnotation(t.Identifier('Object'), null);
+    return t.genericTypeAnnotation(t.identifier('Object'), null);
   }
 
   let properties = Object
@@ -48,10 +46,10 @@ function objectTypeToFlow(objectType, imports) {
 
   let required = objectType.required || [];
 
-  let retVal = t.ObjectTypeAnnotation(
+  let retVal = t.objectTypeAnnotation(
     properties.map(prop => {
-      let propertyDef = t.ObjectTypeProperty(
-        t.Identifier(prop.name),
+      let propertyDef = t.objectTypeProperty(
+        t.identifier(prop.name),
         swaggerTypeToFlowType(prop, imports),
       );
       if (!includes(required, prop.name)) {
@@ -67,13 +65,13 @@ function objectTypeToFlow(objectType, imports) {
 }
 
 function arrayTypeToFlow(arrayType, imports) {
-  return t.GenericTypeAnnotation(
-    t.Identifier('Array'),
+  return t.genericTypeAnnotation(
+    t.identifier('Array'),
     arrayType.items
-      ? t.TypeParameterInstantiation([
+      ? t.typeParameterInstantiation([
         swaggerTypeToFlowType(arrayType.items, imports),
       ])
-      : t.TypeParameterInstantiation([ t.AnyTypeAnnotation() ]),
+      : t.typeParameterInstantiation([ t.anyTypeAnnotation() ]),
   );
 }
 

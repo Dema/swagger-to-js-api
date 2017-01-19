@@ -2,8 +2,6 @@ import * as t from 'babel-types';
 import { get, assign, isEqual, uniq } from 'lodash';
 import swaggerTypeToFlowType from './swaggerTypeToFlowType';
 
-/* eslint-disable babel/new-cap */
-
 export default function(pathObj) {
   let typeImports = [];
   let imports = [];
