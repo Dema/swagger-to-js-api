@@ -1,17 +1,15 @@
-
-
 import { includes } from 'lodash';
 let t = require('babel-types');
 
 module.exports = swaggerTypeToFlowType;
 
-function swaggerTypeToFlowType (sType, imports) {
+function swaggerTypeToFlowType(sType, imports) {
   imports = imports || [];
   if (sType.$ref && sType.$ref.match(/^#\/definitions/)) {
     imports.push(sType.$ref.replace('#/definitions/', ''));
     return t.GenericTypeAnnotation(
       t.Identifier(sType.$ref.replace('#/definitions/', '')),
-      null
+      null,
     );
   }
   if (sType.type === 'object') {
@@ -20,7 +18,9 @@ function swaggerTypeToFlowType (sType, imports) {
     return arrayTypeToFlow(sType, imports);
   } else if (sType.type === 'string') {
     return t.StringTypeAnnotation();
-  } else if (sType.type === 'integer' || sType.type === 'float' || sType.type === 'int64') {
+  } else if (
+    sType.type === 'integer' || sType.type === 'float' || sType.type === 'int64'
+  ) {
     return t.NumberTypeAnnotation();
   } else if (sType.type === 'boolean') {
     return t.BooleanTypeAnnotation();
@@ -29,13 +29,17 @@ function swaggerTypeToFlowType (sType, imports) {
   }
 }
 
-function objectTypeToFlow (objectType, imports) {
+function objectTypeToFlow(objectType, imports) {
   if (!objectType.properties) {
     return t.GenericTypeAnnotation(t.Identifier('Object'), null);
   }
 
-  let properties = Object.keys(objectType.properties)
-    .map(propName => Object.assign(objectType.properties[propName], { name: propName }));
+  let properties = Object
+    .keys(objectType.properties)
+    .map(
+      propName =>
+        Object.assign(objectType.properties[propName], { name: propName }),
+    );
 
   let required = objectType.required || [];
 
@@ -43,13 +47,13 @@ function objectTypeToFlow (objectType, imports) {
     properties.map(prop => {
       let propertyDef = t.ObjectTypeProperty(
         t.Identifier(prop.name),
-        swaggerTypeToFlowType(prop, imports)
+        swaggerTypeToFlowType(prop, imports),
       );
       if (!includes(required, prop.name)) {
         propertyDef.optional = true;
       }
       return propertyDef;
-    })
+    }),
   );
 
   retVal.exact = true;
@@ -57,11 +61,13 @@ function objectTypeToFlow (objectType, imports) {
   return retVal;
 }
 
-function arrayTypeToFlow (arrayType, imports) {
+function arrayTypeToFlow(arrayType, imports) {
   return t.GenericTypeAnnotation(
     t.Identifier('Array'),
     arrayType.items
-      ? t.TypeParameterInstantiation([swaggerTypeToFlowType(arrayType.items, imports)])
-      : t.TypeParameterInstantiation([t.AnyTypeAnnotation()])
+      ? t.TypeParameterInstantiation([
+        swaggerTypeToFlowType(arrayType.items, imports),
+      ])
+      : t.TypeParameterInstantiation([ t.AnyTypeAnnotation() ]),
   );
 }

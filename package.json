@@ -7,7 +7,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint .",
-    "fix-lint": "eslint --fix ."
+    "fix-lint": "eslint --fix .",
+    "format": "prettier --single-quote --trailing-comma --flow-parser --write *.js helpers/*.js bin/*.js"
   },
   "keywords": [
     "swagger",
@@ -42,6 +43,7 @@
     "eslint": "3.11.1",
     "eslint-config-standard": "6.2.1",
     "eslint-plugin-promise": "3.4.0",
-    "eslint-plugin-standard": "2.0.1"
+    "eslint-plugin-standard": "2.0.1",
+    "prettier": "^0.0.9"
   }
 }
