@@ -7,9 +7,9 @@ import * as t from 'babel-types';
 
 const swaggerTypeToFlowType = (
   sType: Object,
-  imports: Array<Object>,
+  imports: Array<string> = [],
 ) => {
-  imports = imports || [];
+
   if (sType.$ref && sType.$ref.match(/^#\/definitions/)) {
     imports.push(sType.$ref.replace('#/definitions/', ''));
     return t.GenericTypeAnnotation(
@@ -17,14 +17,14 @@ const swaggerTypeToFlowType = (
       null,
     );
   }
-  if (sType.type === 'object') {
+  if (sType.type === 'object' || sType.title) {
     return objectTypeToFlow(sType, imports);
   } else if (sType.type === 'array') {
     return arrayTypeToFlow(sType, imports);
   } else if (sType.type === 'string') {
     return t.stringTypeAnnotation();
   } else if (
-    sType.type === 'integer' || sType.type === 'float' || sType.type === 'int64'
+    sType.type === 'number' || sType.type === 'integer' || sType.type === 'float' || sType.type === 'int64'
   ) {
     return t.numberTypeAnnotation();
   } else if (sType.type === 'boolean') {

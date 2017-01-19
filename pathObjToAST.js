@@ -28,16 +28,18 @@ export default function(pathObj) {
     right: t.anyTypeAnnotation(),
   };
 
-  if (get(pathObj, 'responses.200.schema')) {
+  const responseSchema = get(pathObj, 'responses.200.schema') ||
+                         get(pathObj, 'responses.default.schema');
+  if (responseSchema) {
     responseType.right = swaggerTypeToFlowType(
-      get(pathObj, 'responses.200.schema'),
+      responseSchema,
       typeImports,
     );
   }
 
   // prepare a template string for the URL that may contain 0 or more url params
-  let urlParams = [];
-  let urlParts = pathObj.path.split(/(\}|\{)/).reduce((compiled, current) => {
+  const urlParams = [];
+  const urlParts = pathObj.path.split(/(\}|\{)/).reduce((compiled, current) => {
     if (current === '{') {
       return assign({}, compiled, { mode: 'variable' });
     }
