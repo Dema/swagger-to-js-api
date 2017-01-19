@@ -1,5 +1,13 @@
 /* eslint-disable spaced-comment */
 
+/* eslint-disable spaced-comment */
+
+/* eslint-disable spaced-comment */
+
+/* eslint-disable spaced-comment */
+
+/* eslint-disable spaced-comment */
+
 export default function(obj: Object): string {
   if (!obj) {
     return '';

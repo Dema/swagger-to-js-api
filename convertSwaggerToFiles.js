@@ -10,20 +10,22 @@ import swaggerTypeToFlowType from './swaggerTypeToFlowType';
 import { groupBy, uniq } from 'lodash';
 import chalk from 'chalk';
 
+/* eslint-disable babel/new-cap */
+
 export default function(swaggerObj, options) {
   const basePath = swaggerObj.basePath.replace(/\/$/, '');
   const operations = Object
     .keys(swaggerObj.paths)
-    .filter(path => path !== 'parameters')
-    .map(path => {
+    .filter(p => p !== 'parameters')
+    .map(urlPath => {
       // flatten the path objects into an array of pathObjects
       return Object
-        .keys(swaggerObj.paths[path])
-        .filter(path => path !== 'parameters')
+        .keys(swaggerObj.paths[urlPath])
+        .filter(p => p !== 'parameters')
         .map(method => {
-          let config = swaggerObj.paths[path][method];
+          let config = swaggerObj.paths[urlPath][method];
           config.method = method;
-          config.path = basePath + path;
+          config.path = basePath + urlPath;
 
           // OperationId is used as a method name, so we need to sanitize it.
           config.operationId = config.operationId
@@ -34,7 +36,7 @@ export default function(swaggerObj, options) {
           config.parameters = Object.values(
             Object.assign(
               config.parameters || {},
-              swaggerObj.paths[path].parameters || {},
+              swaggerObj.paths[urlPath].parameters || {},
             ),
           );
 
@@ -147,10 +149,10 @@ like the one on macOS.
         [],
       );
       let program = t.Program(
-        imports.map(name => {
+        imports.map(importName => {
           let importStatement = t.ImportDeclaration(
-            [ t.ImportSpecifier(t.Identifier(name), t.Identifier(name)) ],
-            t.StringLiteral(`./${name}`),
+            [ t.ImportSpecifier(t.Identifier(importName), t.Identifier(importName)) ],
+            t.StringLiteral(`./${importName}`),
           );
           importStatement.importKind = 'type';
 

@@ -1,6 +1,3 @@
-/* global File, FormData */
-/* eslint-disable spaced-comment */
-
 function isObject(value: any): boolean {
   return value === Object(value);
 }
