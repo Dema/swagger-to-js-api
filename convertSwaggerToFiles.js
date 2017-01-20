@@ -132,7 +132,7 @@ export default function(swaggerObj: OpenAPI, options: CliOptions) {
       .map(typeDef => {
         const name = typeDef.name;
         const imports = [];
-        return [ name, swaggerTypeToFlowType(typeDef, imports), imports ];
+        return [name, swaggerTypeToFlowType(typeDef, imports), imports];
       })
       .map(tuple => {
         let name = tuple[0];
@@ -150,20 +150,20 @@ export default function(swaggerObj: OpenAPI, options: CliOptions) {
         let program = t.Program(
           imports.map(importName => {
             let importStatement = t.ImportDeclaration(
-              [ t.ImportSpecifier(t.Identifier(importName), t.Identifier(importName)) ],
+              [t.ImportSpecifier(t.Identifier(importName), t.Identifier(importName))],
               t.StringLiteral(`./${importName}`),
             );
             importStatement.importKind = 'type';
 
             return importStatement;
-          }).concat([ mainExport ]),
+          }).concat([mainExport]),
         );
-        return [ name, program ];
+        return [name, program];
       })
       .map((tuple, i) => {
         let name = tuple[0];
         let ast = tuple[1];
-        return [ name, generate(ast, { quotes: 'single' }).code ];
+        return [name, generate(ast, { quotes: 'single' }).code];
       })
       .forEach(tuple => {
         let name = tuple[0];
@@ -180,7 +180,7 @@ export default function(swaggerObj: OpenAPI, options: CliOptions) {
   let paths = operations.map(pathObjToAST).map(arr => {
     let name = arr[0];
     let ast = arr[1];
-    return [ name, generate(ast, { quotes: 'single' }).code ];
+    return [name, generate(ast, { quotes: 'single' }).code];
   });
 
   paths.forEach(arr => {
@@ -194,9 +194,9 @@ export default function(swaggerObj: OpenAPI, options: CliOptions) {
   });
 
   paths
-    .map(([ name, code ]) => [
+    .map(([name, code]) => [
       name,
-      babel.transform(code, { presets: [ react, es2015, stage0 ], plugins: [ flow ] }).code,
+      babel.transform(code, { presets: [react, es2015, stage0], plugins: [flow] }).code,
     ])
     .forEach(arr => {
       let name = arr[0];
@@ -240,9 +240,9 @@ export default function(swaggerObj: OpenAPI, options: CliOptions) {
         name: options.name,
         description: 'auto-generater api from Swagger.json',
         version: options.version,
-        main: [ 'dist/index.js' ],
+        main: ['dist/index.js'],
         license: 'MIT',
-        ignore: [ 'node_modules', 'src', 'helpers', 'types' ],
+        ignore: ['node_modules', 'src', 'helpers', 'types'],
       },
       null,
       2,

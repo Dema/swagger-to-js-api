@@ -71,7 +71,7 @@ const arrayTypeToFlow = (arrayType, imports) => {
       ? t.typeParameterInstantiation([
         swaggerTypeToFlowType(arrayType.items, imports),
       ])
-      : t.typeParameterInstantiation([ t.anyTypeAnnotation() ]),
+      : t.typeParameterInstantiation([t.anyTypeAnnotation()]),
   );
 };
 

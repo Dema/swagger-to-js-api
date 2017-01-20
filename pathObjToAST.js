@@ -85,7 +85,7 @@ export default function(pathObj: Object) {
     ? t.binaryExpression(
       '+',
       t.templateLiteral(urlParts.quasis, urlParts.expressions),
-      t.callExpression(t.identifier('makeQuery'), [ t.identifier('query') ]),
+      t.callExpression(t.identifier('makeQuery'), [t.identifier('query')]),
     )
     : t.templateLiteral(urlParts.quasis, urlParts.expressions);
 
@@ -104,7 +104,7 @@ export default function(pathObj: Object) {
   // if the endpoint takes a post-body, add that as a key to the object
   if (hasBody) {
     let dataValue = hasFormData
-      ? t.callExpression(t.identifier('makeFormData'), [ t.identifier('data') ])
+      ? t.callExpression(t.identifier('makeFormData'), [t.identifier('data')])
       : t.identifier('data');
 
     objectProperties.push(t.objectProperty(
@@ -178,7 +178,7 @@ export default function(pathObj: Object) {
   // also accept `query` and `data` as the last two arguments if API accepts
   let fnStatement = t.functionDeclaration(
     t.identifier(pathObj.operationId),
-    [ hostnameParam ]
+    [hostnameParam]
       .concat(
         pathObj.parameters
           .filter(param => param.in === 'path' && param.required)
@@ -205,7 +205,7 @@ export default function(pathObj: Object) {
   if (hasQuery) {
     imports.push(
       t.importDeclaration(
-        [ t.importDefaultSpecifier(t.identifier('makeQuery')) ],
+        [t.importDefaultSpecifier(t.identifier('makeQuery'))],
         t.stringLiteral('../helpers/makeQuery'),
       ),
     );
@@ -213,14 +213,14 @@ export default function(pathObj: Object) {
   if (hasFormData) {
     imports.push(
       t.importDeclaration(
-        [ t.importDefaultSpecifier(t.identifier('makeFormData')) ],
+        [t.importDefaultSpecifier(t.identifier('makeFormData'))],
         t.stringLiteral('../helpers/makeFormData'),
       ),
     );
   }
   imports.push(
     t.importDeclaration(
-      [ t.importDefaultSpecifier(t.identifier('AjaxPipe')) ],
+      [t.importDefaultSpecifier(t.identifier('AjaxPipe'))],
       t.stringLiteral('../helpers/AjaxPipe'),
     ),
   );
@@ -230,7 +230,7 @@ export default function(pathObj: Object) {
   // a file.
   typeImports = uniq(typeImports).map(name => {
     let importStatement = t.importDeclaration(
-      [ t.importSpecifier(t.identifier(name), t.identifier(name)) ],
+      [t.importSpecifier(t.identifier(name), t.identifier(name))],
       t.stringLiteral(`../types/${name}`),
     );
     importStatement.importKind = 'type';
@@ -240,7 +240,7 @@ export default function(pathObj: Object) {
   return [
     pathObj.operationId,
     t.program(
-      imports.concat(typeImports).concat([ responseType ]).concat([ fn ]),
+      imports.concat(typeImports).concat([responseType]).concat([fn]),
     ),
   ];
 };
