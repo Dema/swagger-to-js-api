@@ -17,7 +17,7 @@ import { List as ImmutableList } from 'immutable';
 
 import flow from 'babel-plugin-transform-flow-strip-types';
 import swaggerTypeToFlowType from './swaggerTypeToFlowType';
-import { groupBy, uniq } from 'lodash';
+import { uniq } from 'lodash';
 import chalk from 'chalk';
 
 import type { CliOptions } from './index';
