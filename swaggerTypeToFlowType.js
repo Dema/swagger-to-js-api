@@ -15,7 +15,7 @@ const swaggerTypeToFlowType = (
       null,
     );
   }
-  if (sType.type === 'object' || sType.title) {
+  if (sType.type === 'object') {
     return objectTypeToFlow(sType, imports);
   } else if (sType.type === 'array') {
     return arrayTypeToFlow(sType, imports);
