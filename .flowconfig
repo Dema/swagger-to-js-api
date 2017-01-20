@@ -6,6 +6,7 @@ interfaces/
 [options]
 suppress_comment=.*\\$FlowIssue.*
 suppress_comment=.*\\$FlowIgnore.*
+suppress_comment=.*\\$FlowFixMe.*
 munge_underscores=true
 unsafe.enable_getters_and_setters=true
 esproposal.class_instance_fields=enable

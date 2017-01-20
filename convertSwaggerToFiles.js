@@ -28,18 +28,25 @@ import type { OpenAPI } from 'openapi-flowtype-definition';
 export default function(swaggerObj: OpenAPI, options: CliOptions) {
   const basePath = (swaggerObj.basePath || '').replace(/\/$/, '');
   const operations = flatten(Object.keys(swaggerObj.paths)
-    .filter(p => p !== 'parameters')
+    .filter(p => !['parameters', '$ref'].includes(p))
     .map(p => {
-      const data = swaggerObj.paths[p];
-      const globalParams = data.parameters;
-      delete data.parameters;
-      return Object.keys(data).map(method => {
+      // We know this is an object because we filter out the keys to
+      // non-objects above. Teach flow.
+      const pathData: Object = swaggerObj.paths[p];
+      const pathParams = pathData.parameters || [];
+      delete pathData.parameters;
+      return Object.keys(pathData)
+      .filter(q => !['parameters', '$ref'].includes(q))
+      .map(method => {
+        // We know this is an object because we filter out the keys to
+        // non-objects above. Teach flow.
+        const methodData: Object = pathData[method];
         return {
-          ...data[method],
+          ...methodData,
           path: basePath + p,
           method,
-          operationId: data[method].operationId.replace(/[. ]/g, '_'),
-          parameters: (data[method].parameters || []).concat(globalParams),
+          operationId: methodData.operationId.replace(/[. ]/g, '_'),
+          parameters: (methodData.parameters || []).concat(pathParams),
         };
       });
     }));
