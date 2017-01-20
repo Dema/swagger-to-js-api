@@ -1,21 +1,23 @@
+/* @flow */
+
 import * as t from 'babel-types';
 import { get, assign, isEqual, uniq } from 'lodash';
 import swaggerTypeToFlowType from './swaggerTypeToFlowType';
 
-export default function(pathObj) {
+export default function(pathObj: Object) {
   let typeImports = [];
-  let imports = [];
+  const imports = [];
   pathObj.parameters = pathObj.parameters || [];
-  let hasQuery = !!(pathObj.parameters || []).filter(
+  const hasQuery = !!(pathObj.parameters || []).filter(
     param => param.in === 'query',
   ).length;
-  let bodyParamJson = (pathObj.parameters || []).filter(
+  const bodyParamJson = (pathObj.parameters || []).filter(
     param => param.in === 'body' && param.name === 'body',
   )[0];
-  let hasFormData = !!(pathObj.parameters || []).filter(
+  const hasFormData = !!(pathObj.parameters || []).filter(
     param => param.in === 'formData',
   ).length;
-  let hasBody = !!(pathObj.parameters || []).filter(
+  const hasBody = !!(pathObj.parameters || []).filter(
     param => param.in === 'formData' || param.in === 'body',
   ).length;
 
@@ -122,8 +124,8 @@ export default function(pathObj) {
 
   let hostnameParam = t.identifier('hostname');
   hostnameParam.typeAnnotation = t.typeAnnotation(t.stringTypeAnnotation());
-  let queryParam = hasQuery ? t.identifier('query') : [];
-  let bodyParam = hasBody ? t.identifier('data') : [];
+  let queryParams = [];
+  let bodyParams = [];
 
   if (hasQuery) {
     const typeDef = {
@@ -133,12 +135,15 @@ export default function(pathObj) {
         .map(param => ({ [param.name]: param }))
         .reduce((obj, current) => Object.assign(obj, current), {}),
     };
+    const queryParam = t.identifier('query');
     queryParam.typeAnnotation = t.typeAnnotation(
       swaggerTypeToFlowType(typeDef, typeImports),
     );
+    queryParams.push(queryParam);
   }
 
   if (hasBody) {
+    const bodyParam = t.identifier('data');
     if (hasFormData) {
       const typeDef = {
         type: 'object',
@@ -159,6 +164,7 @@ export default function(pathObj) {
         swaggerTypeToFlowType(bodyParamJson, typeImports),
       );
     }
+    bodyParams.push(bodyParam);
   }
 
   // make the actual function.
@@ -173,8 +179,8 @@ export default function(pathObj) {
           .filter(param => param.in === 'path' && param.required)
           .map(paramToName),
       )
-      .concat(queryParam)
-      .concat(bodyParam),
+      .concat(queryParams)
+      .concat(bodyParams),
     body,
   );
 
