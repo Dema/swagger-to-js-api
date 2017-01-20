@@ -186,7 +186,7 @@ export default function(swaggerObj: OpenAPI, options: CliOptions) {
       });
   }
 
-  let paths = operations.map(pathObjToAST).map(arr => {
+  let paths = operations.map(p => pathObjToAST(p, swaggerObj)).map(arr => {
     let name = arr[0];
     let ast = arr[1];
     return [name, generate(ast, { quotes: 'single' }).code];

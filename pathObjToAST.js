@@ -4,7 +4,24 @@ import * as t from 'babel-types';
 import { get, assign, isEqual, uniq } from 'lodash';
 import swaggerTypeToFlowType from './swaggerTypeToFlowType';
 
-export default function(pathObj: Object) {
+import type { OpenAPI } from 'openapi-flowtype-definition';
+
+export default function(
+  pathObj: Object,
+  swaggerObj: OpenAPI,
+) {
+  if (!swaggerObj.schemes) {
+    throw new Error('Error: Invalid schema: No schemes.');
+  }
+  if (!swaggerObj.host) {
+    throw new Error('Error: Invalid schema: No host.');
+  }
+  const hostname = `${swaggerObj.schemes[0]}://${swaggerObj.host}`;
+  if (swaggerObj.schemes.length > 1) {
+    console.warn(
+      `Multiple schemes detected but not yet supported. Using: ${swaggerObj.schemes[0]}`,
+    );
+  }
   let typeImports = [];
   const imports = [];
   pathObj.parameters = pathObj.parameters || [];
@@ -97,7 +114,7 @@ export default function(pathObj: Object) {
     ),
     t.objectProperty(
       t.identifier('url'),
-      t.binaryExpression('+', t.identifier('hostname'), pathExpression),
+      t.binaryExpression('+', t.stringLiteral(hostname), pathExpression),
     ),
   ];
 
@@ -127,8 +144,6 @@ export default function(pathObj: Object) {
     ),
   ]);
 
-  let hostnameParam = t.identifier('hostname');
-  hostnameParam.typeAnnotation = t.typeAnnotation(t.stringTypeAnnotation());
   let queryParams = [];
   let bodyParams = [];
 
@@ -173,12 +188,11 @@ export default function(pathObj: Object) {
   }
 
   // make the actual function.
-  // always accept a hostname.
   // accept all path params as individual arguments
   // also accept `query` and `data` as the last two arguments if API accepts
   let fnStatement = t.functionDeclaration(
     t.identifier(pathObj.operationId),
-    [hostnameParam]
+    []
       .concat(
         pathObj.parameters
           .filter(param => param.in === 'path' && param.required)
