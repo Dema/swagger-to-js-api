@@ -190,7 +190,7 @@ export default function(swaggerObj: OpenAPI, options: CliOptions) {
     let code = arr[1];
     fs.writeFileSync(
       path.join(options.output, 'src/', `${name}.${sourceExt}`),
-      `/* @flow */\n\nimport type { AjaxObject } from '../types/AjaxObject';\n${code}\n`,
+      `/* @flow */\n\nimport type { AjaxObject } from '../helpers/AjaxObject';\n${code}\n`,
       'utf-8',
     );
   });
@@ -214,7 +214,7 @@ export default function(swaggerObj: OpenAPI, options: CliOptions) {
 
   // Write the overall index file at the root of the generated output.
   let indexFile = uniq(paths.map(arr => arr[0]))
-    .map(name => `export ${name} from './src/${name}';`)
+    .map(name => `export * from './src/${name}';`)
     .join('\n');
   indexFile = `/* @flow */\n\n${indexFile}\n`;
   fs.writeFileSync(path.join(options.output, `index.${sourceExt}`), indexFile, 'utf-8');
@@ -224,9 +224,16 @@ export default function(swaggerObj: OpenAPI, options: CliOptions) {
       { presets: [react, es2015, stage0], plugins: [flow] },
     ).code;
     fs.writeFileSync(path.join(options.output, `index.${transformExt}`), transformedIndex, 'utf-8');
-
   }
 
+  // Write a flow configuration file into the generated output.
+  fs.writeFileSync(
+    path.join(options.output, `.flowconfig`),
+    fs.readFileSync(path.join(__dirname, '.flowconfig'), 'utf-8'),
+    'utf-8',
+  );
+
+  // Write the package.json file at the root of the generated output.
   fs.writeFileSync(
     path.join(options.output, 'package.json'),
     JSON.stringify(
@@ -244,6 +251,7 @@ export default function(swaggerObj: OpenAPI, options: CliOptions) {
     'utf-8',
   );
 
+  // Write the bower.json file at the root of the generated output.
   fs.writeFileSync(
     path.join(options.output, 'bower.json'),
     JSON.stringify(
