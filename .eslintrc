@@ -29,6 +29,7 @@ parserOptions:
 # then enable some React specific ones.
 rules:
   accessor-pairs: 0
+  array-bracket-spacing: [1, never]
   brace-style: [2, 1tbs]
   comma-dangle: [2, always-multiline]
   consistent-return: 2
@@ -47,6 +48,7 @@ rules:
   no-unused-expressions: 2
   no-unused-vars: [2, {args: none, varsIgnorePattern: ^_}]
   no-var: 2
+  object-shorthand: 1
   quotes: [2, single, {"avoidEscape": true, "allowTemplateLiterals": true}]
   keyword-spacing: 2
   space-before-blocks: 2
@@ -75,19 +77,17 @@ rules:
   react/self-closing-comp: 2
   # We don't care to do this
   react/sort-comp: 1
-  react/wrap-multilines: [2, {declaration: false, assignment: false}]
+  react/jsx-wrap-multilines: [2, {declaration: false, assignment: false}]
 
   # eslint-plugin-babel
   babel/generator-star-spacing: 0
   babel/new-cap: 1
-  babel/array-bracket-spacing: 1
   babel/object-curly-spacing: [1, "always"]
-  babel/object-shorthand: 1
   babel/no-await-in-loop: 1
-  babel/flow-object-type: [1, "comma"]
   # babel/arrow-parens: [1, "as-needed"]
 
   # eslint-plugin-flowtype
+  flowtype/object-type-delimiter: [1, "comma"]
   flowtype/space-after-type-colon: [1, "always"]
   flowtype/define-flow-type: 1
   flowtype/use-flow-type: 1
