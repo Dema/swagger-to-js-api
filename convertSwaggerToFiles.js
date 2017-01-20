@@ -23,8 +23,6 @@ import chalk from 'chalk';
 import type { CliOptions } from './index';
 import type { OpenAPI } from 'openapi-flowtype-definition';
 
-/* eslint-disable babel/new-cap */
-
 export default function(swaggerObj: OpenAPI, options: CliOptions) {
   const basePath = (swaggerObj.basePath || '').replace(/\/$/, '');
   const operations = flatten(Object.keys(swaggerObj.paths)
@@ -141,17 +139,17 @@ export default function(swaggerObj: OpenAPI, options: CliOptions) {
         let mainExport = t.exportNamedDeclaration(
           {
             type: 'TypeAlias',
-            id: t.Identifier(name),
+            id: t.identifier(name),
             typeParameters: null,
             right: typeAst,
           },
           [],
         );
-        let program = t.Program(
+        let program = t.program(
           imports.map(importName => {
-            let importStatement = t.ImportDeclaration(
-              [t.ImportSpecifier(t.Identifier(importName), t.Identifier(importName))],
-              t.StringLiteral(`./${importName}`),
+            let importStatement = t.importDeclaration(
+              [t.importSpecifier(t.identifier(importName), t.identifier(importName))],
+              t.stringLiteral(`./${importName}`),
             );
             importStatement.importKind = 'type';
 
