@@ -107,7 +107,12 @@ export default function(pathObj: Object) {
       ? t.callExpression(t.identifier('makeFormData'), [ t.identifier('data') ])
       : t.identifier('data');
 
-    objectProperties.push(t.objectProperty(t.identifier('data'), dataValue));
+    objectProperties.push(t.objectProperty(
+      t.identifier('data'),
+      dataValue,
+      false,
+      hasBody && !hasFormData, // Only use shorthand if we pass body data through.
+    ));
   }
 
   // the body of the function.
