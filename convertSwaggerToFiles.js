@@ -107,6 +107,8 @@ export default function(swaggerObj: OpenAPI, options: CliOptions) {
   writeHelperFile('makeQuery.js', options, sourceExt, transformExt);
   writeHelperFile('makeFormData.js', options, sourceExt, transformExt);
 
+  const typePaths = [];
+
   if (swaggerObj.definitions) {
     const definitions = swaggerObj.definitions;
     const toFindDuplicates = {};
@@ -171,8 +173,13 @@ export default function(swaggerObj: OpenAPI, options: CliOptions) {
         let name = tuple[0];
         console.log(':: ', name);
         let code = tuple[1];
+        const location = path.join('types/', `${name}.js`);
+        typePaths.push({
+          name,
+          location,
+        });
         fs.writeFileSync(
-          path.join(options.output, 'types/', `${name}.js`),
+          path.join(options.output, location),
           `/* @flow */\n\n${code}`,
           'utf-8',
         );
@@ -213,10 +220,23 @@ export default function(swaggerObj: OpenAPI, options: CliOptions) {
   }
 
   // Write the overall index file at the root of the generated output.
-  let indexFile = uniq(paths.map(arr => arr[0]))
+  // Import and export all types.
+  let indexFile = typePaths
+    .map(info => `import type ${info.name} from './${info.location}';`)
+    .join('\n');
+  indexFile += '\n';
+  indexFile += 'export type {\n';
+  indexFile += typePaths
+    .map(info => `  ${info.name},`)
+    .join('\n');
+  indexFile += '\n}\n';
+  indexFile += '\n';
+  indexFile += uniq(paths.map(arr => arr[0]))
     .map(name => `export * from './src/${name}';`)
     .join('\n');
   indexFile = `/* @flow */\n\n${indexFile}\n`;
+
+  // Import and export all path functions.
   fs.writeFileSync(path.join(options.output, `index.${sourceExt}`), indexFile, 'utf-8');
   if (options.transform) {
     const transformedIndex = babel.transform(
