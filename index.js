@@ -22,6 +22,7 @@ export type CliOptions = {
   force: boolean,
   name: string,
   version: string,
+  transform: boolean,
   help?: boolean,
 }
 
@@ -55,6 +56,13 @@ const optionDefs = [
     alias: 'v',
     description: 'Version number for the generator NPM/Bower modules',
     type: String,
+  },
+  {
+    name: 'transform',
+    alias: 't',
+    description: 'Transform output to vanilla javascript.',
+    type: Boolean,
+    default: false,
   },
   {
     name: 'help',

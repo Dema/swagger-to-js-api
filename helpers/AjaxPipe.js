@@ -1,10 +1,15 @@
-function AjaxPipe(obj) {
-  let that = this;
-  Object.keys(obj).forEach(function(key) {
-    that[key] = obj[key];
-  });
+// @flow
+
+export default class AjaxPipe<In, Out> {
+  constructor (obj: In): AjaxPipe<In, Out> & In {
+    // $FlowIgnore.
+    Object.assign(this, obj);
+    return ((this: any): AjaxPipe<In, Out> & In);
+  }
+
+  method: 'GET' | 'POST' | 'PUT' | 'DELETE';
+  url: string;
+  data: any;
+
+  pipeThrough: (fn: Function) => Promise<{data: Out, status: number}>;
 }
-
-AjaxPipe.prototype.pipeThrough = fn => fn(this);
-
-export default AjaxPipe;

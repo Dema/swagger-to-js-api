@@ -23,6 +23,34 @@ import chalk from 'chalk';
 import type { CliOptions } from './index';
 import type { OpenAPI } from 'openapi-flowtype-definition';
 
+const writeHelperFile = (
+  filename: string,
+  options: CliOptions,
+  sourceExt: string,
+  transformExt: string,
+): void => {
+
+  // Read the helper file included in this project.
+  const code = fs.readFileSync(
+    path.join(__dirname, './helpers/', filename),
+    'utf-8',
+  );
+
+  // Write it out into generated project, potentially changing the ext.
+  fs.writeFileSync(
+    path.join(options.output, 'helpers/', filename.replace(/\.js$/, `.${sourceExt}`)),
+    code,
+  );
+
+  // If we want to transform the generated code, transform the helper too.
+  if (options.transform) {
+    fs.writeFileSync(
+      path.join(options.output, 'helpers/', filename.replace(/\.js$/, `.${transformExt}`)),
+      babel.transform(code, { presets: [react, es2015, stage0], plugins: [flow] }).code,
+    );
+  }
+};
+
 export default function(swaggerObj: OpenAPI, options: CliOptions) {
   const basePath = (swaggerObj.basePath || '').replace(/\/$/, '');
   const operations = flatten(Object.keys(swaggerObj.paths)
@@ -70,38 +98,14 @@ export default function(swaggerObj: OpenAPI, options: CliOptions) {
   mkdirp.sync(path.join(options.output, 'helpers/'));
   mkdirp.sync(path.join(options.output, 'types/'));
   mkdirp.sync(path.join(options.output, 'dist/'));
-  fs.writeFileSync(
-    path.join(options.output, 'helpers/', 'AjaxPipe.js'),
-    fs.readFileSync(path.join(__dirname, './helpers/', 'AjaxPipe.js'), 'utf-8'),
-  );
-  fs.writeFileSync(
-    path.join(options.output, 'helpers/', 'AjaxPipe.js.flow'),
-    fs.readFileSync(
-      path.join(__dirname, './helpers/', 'AjaxPipe.js.flow'),
-      'utf-8',
-    ),
-  );
-  fs.writeFileSync(
-    path.join(options.output, 'helpers/', 'makeQuery.js'),
-    fs.readFileSync(
-      path.join(__dirname, './helpers/', 'makeQuery.js'),
-      'utf-8',
-    ),
-  );
-  fs.writeFileSync(
-    path.join(options.output, 'helpers/', 'makeFormData.js'),
-    fs.readFileSync(
-      path.join(__dirname, './helpers/', 'makeFormData.js'),
-      'utf-8',
-    ),
-  );
-  fs.writeFileSync(
-    path.join(options.output, 'types/', 'AjaxObject.js.flow'),
-    fs.readFileSync(
-      path.join(__dirname, './helpers/', 'AjaxObject.js'),
-      'utf-8',
-    ),
-  );
+
+  const sourceExt = (options.transform) ? 'js.flow' : 'js';
+  const transformExt = 'js';
+
+  writeHelperFile('AjaxPipe.js', options, sourceExt, transformExt);
+  writeHelperFile('AjaxObject.js', options, sourceExt, transformExt);
+  writeHelperFile('makeQuery.js', options, sourceExt, transformExt);
+  writeHelperFile('makeFormData.js', options, sourceExt, transformExt);
 
   if (swaggerObj.definitions) {
     const definitions = swaggerObj.definitions;
@@ -185,41 +189,50 @@ export default function(swaggerObj: OpenAPI, options: CliOptions) {
     let name = arr[0];
     let code = arr[1];
     fs.writeFileSync(
-      path.join(options.output, 'src/', `${name}.js.flow`),
+      path.join(options.output, 'src/', `${name}.${sourceExt}`),
       `/* @flow */\n\nimport type { AjaxObject } from '../types/AjaxObject';\n${code}\n`,
       'utf-8',
     );
   });
 
-  paths
-    .map(([name, code]) => [
-      name,
-      babel.transform(code, { presets: [react, es2015, stage0], plugins: [flow] }).code,
-    ])
-    .forEach(arr => {
-      let name = arr[0];
-      let code = arr[1];
-      fs.writeFileSync(
-        path.join(options.output, 'src/', `${name}.js`),
-        `${code}\n`,
-        'utf-8',
-      );
-    });
+  if (options.transform) {
+    paths
+      .map(([name, code]) => [
+        name,
+        babel.transform(code, { presets: [react, es2015, stage0], plugins: [flow] }).code,
+      ])
+      .forEach(arr => {
+        let name = arr[0];
+        let code = arr[1];
+        fs.writeFileSync(
+          path.join(options.output, 'src/', `${name}.${transformExt}`),
+          `${code}\n`,
+          'utf-8',
+        );
+      });
+  }
 
+  // Write the overall index file at the root of the generated output.
   let indexFile = uniq(paths.map(arr => arr[0]))
-    .map(name => `${name}: require('./src/${name}.js').default`)
-    .join(',\n  ');
+    .map(name => `export ${name} from './src/${name}';`)
+    .join('\n');
+  indexFile = `/* @flow */\n\n${indexFile}\n`;
+  fs.writeFileSync(path.join(options.output, `index.${sourceExt}`), indexFile, 'utf-8');
+  if (options.transform) {
+    const transformedIndex = babel.transform(
+      indexFile,
+      { presets: [react, es2015, stage0], plugins: [flow] },
+    ).code;
+    fs.writeFileSync(path.join(options.output, `index.${transformExt}`), transformedIndex, 'utf-8');
 
-  indexFile = `// @flow\n\nmodule.exports = {\n  ${indexFile}\n}\n`;
-
-  fs.writeFileSync(path.join(options.output, 'index.js'), indexFile, 'utf-8');
+  }
 
   fs.writeFileSync(
     path.join(options.output, 'package.json'),
     JSON.stringify(
       {
         name: options.name,
-        description: 'auto-generater api from Swagger.json',
+        description: 'Auto-generated api from Swagger.json',
         version: options.version,
         main: 'index.js',
         license: 'MIT',
@@ -236,7 +249,7 @@ export default function(swaggerObj: OpenAPI, options: CliOptions) {
     JSON.stringify(
       {
         name: options.name,
-        description: 'auto-generater api from Swagger.json',
+        description: 'Auto-generated api from Swagger.json',
         version: options.version,
         main: ['dist/index.js'],
         license: 'MIT',
