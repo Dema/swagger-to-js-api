@@ -232,7 +232,7 @@ export default function(swaggerObj: OpenAPI, options: CliOptions) {
   indexFile += '\n}\n';
   indexFile += '\n';
   indexFile += uniq(paths.map(arr => arr[0]))
-    .map(name => `export * from './src/${name}';`)
+    .map(name => `export { default as ${name} } from './src/${name}';`)
     .join('\n');
   indexFile = `/* @flow */\n\n${indexFile}\n`;
 
