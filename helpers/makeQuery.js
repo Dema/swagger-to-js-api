@@ -1,4 +1,4 @@
-/* eslint-disable spaced-comment */
+/* @flow */
 
 export default function(obj: Object): string {
   if (!obj) {

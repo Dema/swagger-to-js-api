@@ -1,20 +1,22 @@
-function isObject(value: any): boolean {
+/* flow */
+
+const isObject = (value: any): boolean => {
   return value === Object(value);
-}
+};
 
-function isArray(value: any): boolean {
+const isArray = (value: any): boolean => {
   return Array.isArray(value);
-}
+};
 
-function isFile(value: any): boolean {
+const isFile = (value: any): boolean => {
   return value instanceof File;
-}
+};
 
-function objectToFormData(
+const objectToFormData = (
   obj: Object | Array,
   formData: ?FormData,
   preKey: ?string,
-): FormData {
+): FormData => {
   formData = formData || new FormData();
 
   Object.keys(obj).forEach(function(prop) {
@@ -38,6 +40,6 @@ function objectToFormData(
   });
 
   return formData;
-}
+};
 
 export default objectToFormData;
