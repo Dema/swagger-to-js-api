@@ -22,7 +22,7 @@ export default function(pathObj: Object, swaggerObj: OpenAPI) {
     param => param.in === 'query',
   ).length;
   const bodyParamJson = (pathObj.parameters || []).filter(
-    param => param.in === 'body' && param.name === 'body',
+    param => param.in === 'body',
   )[0];
   const hasFormData = !!(pathObj.parameters || []).filter(
     param => param.in === 'formData',
