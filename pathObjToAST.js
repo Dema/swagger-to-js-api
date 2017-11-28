@@ -7,14 +7,10 @@ import swaggerTypeToFlowType from './swaggerTypeToFlowType';
 import type { OpenAPI } from 'openapi-flowtype-definition';
 
 export default function(pathObj: Object, swaggerObj: OpenAPI) {
-  if (!swaggerObj.schemes) {
-    throw new Error('Error: Invalid schema: No schemes.');
-  }
-  if (!swaggerObj.host) {
-    throw new Error('Error: Invalid schema: No host.');
-  }
-  const hostname = `${swaggerObj.schemes[0]}://${swaggerObj.host}`;
-  if (swaggerObj.schemes.length > 1) {
+  const hostname = swaggerObj.schemes != null && swaggerObj.host != null
+    ? `${swaggerObj.schemes[0]}://${swaggerObj.host}`
+    : null;
+  if (swaggerObj.schemes != null && swaggerObj.schemes.length > 1) {
     console.warn(
       `Multiple schemes detected but not yet supported. Using: ${swaggerObj.schemes[0]}`,
     );
@@ -108,7 +104,9 @@ export default function(pathObj: Object, swaggerObj: OpenAPI) {
     ),
     t.objectProperty(
       t.identifier('url'),
-      t.binaryExpression('+', t.stringLiteral(hostname), pathExpression),
+      hostname != null
+        ? t.binaryExpression('+', t.stringLiteral(hostname), pathExpression)
+        : pathExpression,
     ),
   ];
 
