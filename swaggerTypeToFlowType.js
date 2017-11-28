@@ -20,6 +20,9 @@ const swaggerTypeToFlowType = (
   } else if (sType.type === 'array') {
     return arrayTypeToFlow(sType, imports);
   } else if (sType.type === 'string') {
+    if (sType.enum) {
+      return t.unionTypeAnnotation(sType.enum.map(s => t.stringLiteral(s)));
+    }
     return t.stringTypeAnnotation();
   } else if (
     sType.type === 'number' || sType.type === 'integer' || sType.type === 'float' || sType.type === 'int64'
