@@ -11,10 +11,10 @@ export default function(obj: Object): string {
   }
 
   return '?' + keys.map(function(key) {
-    let value = obj[key];
-    if (typeof value === 'object') {
-      value = JSON.stringify(value);
-    }
-    return encodeURIComponent(key) + '=' + encodeURIComponent(value);
-  }).join('&');
-};
+      let value = obj[key];
+      if (typeof value === 'object') {
+        value = JSON.stringify(value);
+      }
+      return encodeURIComponent(key) + '=' + encodeURIComponent(value);
+    }).join('&');
+}

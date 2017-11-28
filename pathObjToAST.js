@@ -6,10 +6,7 @@ import swaggerTypeToFlowType from './swaggerTypeToFlowType';
 
 import type { OpenAPI } from 'openapi-flowtype-definition';
 
-export default function(
-  pathObj: Object,
-  swaggerObj: OpenAPI,
-) {
+export default function(pathObj: Object, swaggerObj: OpenAPI) {
   if (!swaggerObj.schemes) {
     throw new Error('Error: Invalid schema: No schemes.');
   }
@@ -46,12 +43,9 @@ export default function(
   };
 
   const responseSchema = get(pathObj, 'responses.200.schema') ||
-                         get(pathObj, 'responses.default.schema');
+    get(pathObj, 'responses.default.schema');
   if (responseSchema) {
-    responseType.right = swaggerTypeToFlowType(
-      responseSchema,
-      typeImports,
-    );
+    responseType.right = swaggerTypeToFlowType(responseSchema, typeImports);
   }
 
   // prepare a template string for the URL that may contain 0 or more url params
@@ -102,7 +96,7 @@ export default function(
     ? t.binaryExpression(
       '+',
       t.templateLiteral(urlParts.quasis, urlParts.expressions),
-      t.callExpression(t.identifier('makeQuery'), [t.identifier('query')]),
+      t.callExpression(t.identifier('makeQuery'), [ t.identifier('query') ]),
     )
     : t.templateLiteral(urlParts.quasis, urlParts.expressions);
 
@@ -121,15 +115,18 @@ export default function(
   // if the endpoint takes a post-body, add that as a key to the object
   if (hasBody) {
     let dataValue = hasFormData
-      ? t.callExpression(t.identifier('makeFormData'), [t.identifier('data')])
+      ? t.callExpression(t.identifier('makeFormData'), [ t.identifier('data') ])
       : t.identifier('data');
 
-    objectProperties.push(t.objectProperty(
-      t.identifier('data'),
-      dataValue,
-      false,
-      hasBody && !hasFormData, // Only use shorthand if we pass body data through.
-    ));
+    objectProperties.push(
+      t.objectProperty(
+        t.identifier('data'),
+        dataValue,
+        false,
+        // Only use shorthand if we pass body data through.
+        hasBody && !hasFormData,
+      ),
+    );
   }
 
   // the body of the function.
@@ -219,7 +216,7 @@ export default function(
   if (hasQuery) {
     imports.push(
       t.importDeclaration(
-        [t.importDefaultSpecifier(t.identifier('makeQuery'))],
+        [ t.importDefaultSpecifier(t.identifier('makeQuery')) ],
         t.stringLiteral('../helpers/makeQuery'),
       ),
     );
@@ -227,14 +224,14 @@ export default function(
   if (hasFormData) {
     imports.push(
       t.importDeclaration(
-        [t.importDefaultSpecifier(t.identifier('makeFormData'))],
+        [ t.importDefaultSpecifier(t.identifier('makeFormData')) ],
         t.stringLiteral('../helpers/makeFormData'),
       ),
     );
   }
   imports.push(
     t.importDeclaration(
-      [t.importDefaultSpecifier(t.identifier('AjaxPipe'))],
+      [ t.importDefaultSpecifier(t.identifier('AjaxPipe')) ],
       t.stringLiteral('../helpers/AjaxPipe'),
     ),
   );
@@ -244,7 +241,7 @@ export default function(
   // a file.
   typeImports = uniq(typeImports).map(name => {
     let importStatement = t.importDeclaration(
-      [t.importSpecifier(t.identifier(name), t.identifier(name))],
+      [ t.importSpecifier(t.identifier(name), t.identifier(name)) ],
       t.stringLiteral(`../types/${name}`),
     );
     importStatement.importKind = 'type';
@@ -254,10 +251,10 @@ export default function(
   return [
     pathObj.operationId,
     t.program(
-      imports.concat(typeImports).concat([responseType]).concat([fn]),
+      imports.concat(typeImports).concat([ responseType ]).concat([ fn ]),
     ),
   ];
-};
+}
 
 function paramToName(param) {
   let paramName = t.identifier(param.name);

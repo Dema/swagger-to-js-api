@@ -5,4 +5,4 @@ export default function(folderPath) {
     return folderPath;
   }
   return path.join(process.cwd(), folderPath);
-};
+}

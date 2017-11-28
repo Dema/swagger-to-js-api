@@ -24,7 +24,7 @@ export type CliOptions = {
   version: string,
   transform: boolean,
   help?: boolean,
-}
+};
 
 const optionDefs = [
   {
@@ -112,7 +112,6 @@ if (!options.name) {
 
 options.input = resolvePath(options.input);
 options.output = resolvePath(options.output);
-
 if (options.force) {
   rimraf.sync(options.output);
 } else {
@@ -121,11 +120,10 @@ if (options.force) {
     process.exit(1);
   }
 }
-
 const jsonFile: OpenAPI = JSON.parse(fs.readFileSync(options.input, 'utf-8'));
 convertSwaggerToFiles(jsonFile, options);
 browserify({ standalone: camelCase(options.name) })
-  .transform('babelify', { presets: [es2015, react, stage0] })
+  .transform('babelify', { presets: [ es2015, react, stage0 ] })
   .add(path.join(options.output, './index.js'))
   .bundle()
   .pipe(fs.createWriteStream(path.join(options.output, './dist/index.js')));

@@ -3,11 +3,7 @@
 import { includes } from 'lodash';
 import * as t from 'babel-types';
 
-const swaggerTypeToFlowType = (
-  sType: Object,
-  imports: Array<string> = [],
-) => {
-
+const swaggerTypeToFlowType = (sType: Object, imports: Array<string> = []) => {
   if (sType.$ref && sType.$ref.match(/^#\/definitions/)) {
     imports.push(sType.$ref.replace('#/definitions/', ''));
     return t.genericTypeAnnotation(
@@ -25,7 +21,10 @@ const swaggerTypeToFlowType = (
     }
     return t.stringTypeAnnotation();
   } else if (
-    sType.type === 'number' || sType.type === 'integer' || sType.type === 'float' || sType.type === 'int64'
+    sType.type === 'number' ||
+      sType.type === 'integer' ||
+      sType.type === 'float' ||
+      sType.type === 'int64'
   ) {
     return t.numberTypeAnnotation();
   } else if (sType.type === 'boolean') {
@@ -74,7 +73,7 @@ const arrayTypeToFlow = (arrayType, imports) => {
       ? t.typeParameterInstantiation([
         swaggerTypeToFlowType(arrayType.items, imports),
       ])
-      : t.typeParameterInstantiation([t.anyTypeAnnotation()]),
+      : t.typeParameterInstantiation([ t.anyTypeAnnotation() ]),
   );
 };
 

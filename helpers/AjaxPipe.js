@@ -1,7 +1,7 @@
 /* @flow */
 
 export default class AjaxPipe<In, Out> {
-  constructor (obj: In): AjaxPipe<In, Out> & In {
+  constructor(obj: In): AjaxPipe<In, Out> & In {
     // $FlowIgnore.
     Object.assign(this, obj);
     return ((this: any): AjaxPipe<In, Out> & In);
@@ -11,5 +11,6 @@ export default class AjaxPipe<In, Out> {
   url: string;
   data: any;
 
-  pipeThrough = async (fn: Function): Promise<{data: Out, status: number}> => await fn(this);
+  pipeThrough = async (fn: Function): Promise<{ data: Out, status: number }> =>
+    await fn(this);
 }

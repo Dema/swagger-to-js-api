@@ -14,7 +14,6 @@ import flatten from 'array-flatten';
 import { Set as ImmutableSet } from 'immutable';
 import { List as ImmutableList } from 'immutable';
 
-
 import flow from 'babel-plugin-transform-flow-strip-types';
 import swaggerTypeToFlowType from './swaggerTypeToFlowType';
 import { uniq } from 'lodash';
@@ -28,61 +27,78 @@ const writeHelperFile = (
   options: CliOptions,
   sourceExt: string,
   transformExt: string,
-): void => {
-
-  // Read the helper file included in this project.
-  const code = fs.readFileSync(
-    path.join(__dirname, './helpers/', filename),
-    'utf-8',
-  );
-
-  // Write it out into generated project, potentially changing the ext.
-  fs.writeFileSync(
-    path.join(options.output, 'helpers/', filename.replace(/\.js$/, `.${sourceExt}`)),
-    code,
-  );
-
-  // If we want to transform the generated code, transform the helper too.
-  if (options.transform) {
-    fs.writeFileSync(
-      path.join(options.output, 'helpers/', filename.replace(/\.js$/, `.${transformExt}`)),
-      babel.transform(code, { presets: [react, es2015, stage0], plugins: [flow] }).code,
+): void =>
+  {
+    // Read the helper file included in this project.
+    const code = fs.readFileSync(
+      path.join(__dirname, './helpers/', filename),
+      'utf-8',
     );
-  }
-};
+
+    // Write it out into generated project, potentially changing the ext.
+    fs.writeFileSync(
+      path.join(
+        options.output,
+        'helpers/',
+        filename.replace(/\.js$/, `.${sourceExt}`),
+      ),
+      code,
+    );
+
+    // If we want to transform the generated code, transform the helper too.
+    if (options.transform) {
+      fs.writeFileSync(
+        path.join(
+          options.output,
+          'helpers/',
+          filename.replace(/\.js$/, `.${transformExt}`),
+        ),
+        babel.transform(code, {
+          presets: [ react, es2015, stage0 ],
+          plugins: [ flow ],
+        }).code,
+      );
+    }
+  };
 
 export default function(swaggerObj: OpenAPI, options: CliOptions) {
   const basePath = (swaggerObj.basePath || '').replace(/\/$/, '');
-  const operations = flatten(Object.keys(swaggerObj.paths)
-    .filter(p => !['parameters', '$ref'].includes(p))
-    .map(p => {
-      // We know this is an object because we filter out the keys to
-      // non-objects above. Teach flow.
-      const pathData: Object = swaggerObj.paths[p];
-      const pathParams = pathData.parameters || [];
-      delete pathData.parameters;
-      return Object.keys(pathData)
-      .filter(q => !['parameters', '$ref'].includes(q))
-      .map(method => {
+  const operations = flatten(
+    Object
+      .keys(swaggerObj.paths)
+      .filter(p => ![ 'parameters', '$ref' ].includes(p))
+      .map(p => {
         // We know this is an object because we filter out the keys to
         // non-objects above. Teach flow.
-        const methodData: Object = pathData[method];
-        return {
-          ...methodData,
-          path: basePath + p,
-          method,
-          operationId: methodData.operationId.replace(/[. ]/g, '_'),
-          parameters: (methodData.parameters || []).concat(pathParams),
-        };
-      });
-    }));
+        const pathData: Object = swaggerObj.paths[p];
+        const pathParams = pathData.parameters || [];
+        delete pathData.parameters;
+        return Object
+          .keys(pathData)
+          .filter(q => ![ 'parameters', '$ref' ].includes(q))
+          .map(method => {
+            // We know this is an object because we filter out the keys to
+            // non-objects above. Teach flow.
+            const methodData: Object = pathData[method];
+            return {
+              ...methodData,
+              path: basePath + p,
+              method,
+              operationId: methodData.operationId.replace(/[. ]/g, '_'),
+              parameters: (methodData.parameters || []).concat(pathParams),
+            };
+          });
+      }),
+  );
 
-  const operationIdList = new ImmutableList(operations.map(op => op.operationId));
+  const operationIdList = new ImmutableList(
+    operations.map(op => op.operationId),
+  );
   const operationIdSet = new ImmutableSet(operationIdList);
   if (operationIdList.count() > operationIdSet.count()) {
     throw new Error(
       'The Swagger JSON contains duplicate operationIds for different endpoints: ' +
-      JSON.stringify(operationIdList.toArray()),
+        JSON.stringify(operationIdList.toArray()),
     );
   }
 
@@ -99,7 +115,7 @@ export default function(swaggerObj: OpenAPI, options: CliOptions) {
   mkdirp.sync(path.join(options.output, 'types/'));
   mkdirp.sync(path.join(options.output, 'dist/'));
 
-  const sourceExt = (options.transform) ? 'js.flow' : 'js';
+  const sourceExt = options.transform ? 'js.flow' : 'js';
   const transformExt = 'js';
 
   writeHelperFile('AjaxPipe.js', options, sourceExt, transformExt);
@@ -128,15 +144,12 @@ export default function(swaggerObj: OpenAPI, options: CliOptions) {
           /* eslint-enable */
         }
         toFindDuplicates[defName.toLowerCase()] = true;
-        return {
-          ...definitions[defName],
-          name: defName,
-        };
+        return { ...definitions[defName], name: defName };
       })
       .map(typeDef => {
         const name = typeDef.name;
         const imports = [];
-        return [name, swaggerTypeToFlowType(typeDef, imports), imports];
+        return [ name, swaggerTypeToFlowType(typeDef, imports), imports ];
       })
       .map(tuple => {
         let name = tuple[0];
@@ -154,30 +167,32 @@ export default function(swaggerObj: OpenAPI, options: CliOptions) {
         let program = t.program(
           imports.map(importName => {
             let importStatement = t.importDeclaration(
-              [t.importSpecifier(t.identifier(importName), t.identifier(importName))],
+              [
+                t.importSpecifier(
+                  t.identifier(importName),
+                  t.identifier(importName),
+                ),
+              ],
               t.stringLiteral(`./${importName}`),
             );
             importStatement.importKind = 'type';
 
             return importStatement;
-          }).concat([mainExport]),
+          }).concat([ mainExport ]),
         );
-        return [name, program];
+        return [ name, program ];
       })
       .map((tuple, i) => {
         let name = tuple[0];
         let ast = tuple[1];
-        return [name, generate(ast, { quotes: 'single' }).code];
+        return [ name, generate(ast, { quotes: 'single' }).code ];
       })
       .forEach(tuple => {
         let name = tuple[0];
         console.log(':: ', name);
         let code = tuple[1];
         const location = path.join('types/', `${name}.js`);
-        typePaths.push({
-          name,
-          location,
-        });
+        typePaths.push({ name, location });
         fs.writeFileSync(
           path.join(options.output, location),
           `/* @flow */\n\n${code}`,
@@ -186,11 +201,13 @@ export default function(swaggerObj: OpenAPI, options: CliOptions) {
       });
   }
 
-  let paths = operations.map(p => pathObjToAST(p, swaggerObj)).map(arr => {
-    let name = arr[0];
-    let ast = arr[1];
-    return [name, generate(ast, { quotes: 'single' }).code];
-  });
+  let paths = operations
+    .map(p => pathObjToAST(p, swaggerObj))
+    .map(arr => {
+      let name = arr[0];
+      let ast = arr[1];
+      return [ name, generate(ast, { quotes: 'single' }).code ];
+    });
 
   paths.forEach(arr => {
     let name = arr[0];
@@ -204,9 +221,12 @@ export default function(swaggerObj: OpenAPI, options: CliOptions) {
 
   if (options.transform) {
     paths
-      .map(([name, code]) => [
+      .map(([ name, code ]) => [
         name,
-        babel.transform(code, { presets: [react, es2015, stage0], plugins: [flow] }).code,
+        babel.transform(code, {
+          presets: [ react, es2015, stage0 ],
+          plugins: [ flow ],
+        }).code,
       ])
       .forEach(arr => {
         let name = arr[0];
@@ -226,9 +246,7 @@ export default function(swaggerObj: OpenAPI, options: CliOptions) {
     .join('\n');
   indexFile += '\n';
   indexFile += 'export type {\n';
-  indexFile += typePaths
-    .map(info => `  ${info.name},`)
-    .join('\n');
+  indexFile += typePaths.map(info => `  ${info.name},`).join('\n');
   indexFile += '\n}\n';
   indexFile += '\n';
   indexFile += uniq(paths.map(arr => arr[0]))
@@ -237,13 +255,21 @@ export default function(swaggerObj: OpenAPI, options: CliOptions) {
   indexFile = `/* @flow */\n\n${indexFile}\n`;
 
   // Import and export all path functions.
-  fs.writeFileSync(path.join(options.output, `index.${sourceExt}`), indexFile, 'utf-8');
+  fs.writeFileSync(
+    path.join(options.output, `index.${sourceExt}`),
+    indexFile,
+    'utf-8',
+  );
   if (options.transform) {
-    const transformedIndex = babel.transform(
-      indexFile,
-      { presets: [react, es2015, stage0], plugins: [flow] },
-    ).code;
-    fs.writeFileSync(path.join(options.output, `index.${transformExt}`), transformedIndex, 'utf-8');
+    const transformedIndex = babel.transform(indexFile, {
+      presets: [ react, es2015, stage0 ],
+      plugins: [ flow ],
+    }).code;
+    fs.writeFileSync(
+      path.join(options.output, `index.${transformExt}`),
+      transformedIndex,
+      'utf-8',
+    );
   }
 
   // Write a flow configuration file into the generated output.
@@ -279,13 +305,13 @@ export default function(swaggerObj: OpenAPI, options: CliOptions) {
         name: options.name,
         description: 'Auto-generated api from Swagger.json',
         version: options.version,
-        main: ['dist/index.js'],
+        main: [ 'dist/index.js' ],
         license: 'MIT',
-        ignore: ['node_modules', 'src', 'helpers', 'types'],
+        ignore: [ 'node_modules', 'src', 'helpers', 'types' ],
       },
       null,
       2,
     ),
     'utf-8',
   );
-};
+}
