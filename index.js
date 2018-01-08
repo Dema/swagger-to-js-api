@@ -1,20 +1,22 @@
 /* @flow */
 import 'babel-polyfill';
-import parseArgs from 'command-line-args';
-import printUsage from 'command-line-usage';
-import resolvePath from './resolvePath';
-import browserify from 'browserify';
-import convertSwaggerToFiles from './convertSwaggerToFiles';
-import fs from 'fs';
-import rimraf from 'rimraf';
-import path from 'path';
 import { camelCase } from 'lodash';
-import packageJson from './package.json';
+import browserify from 'browserify';
 import es2015 from 'babel-preset-es2015';
-import stage0 from 'babel-preset-stage-0';
+import fs from 'fs';
+import parseArgs from 'command-line-args';
+import path from 'path';
+import printUsage from 'command-line-usage';
 import react from 'babel-preset-react';
-
+import rimraf from 'rimraf';
+import stage0 from 'babel-preset-stage-0';
 import type { OpenAPI } from 'openapi-flowtype-definition';
+import yaml from 'js-yaml';
+
+import convertSwaggerToFiles from './convertSwaggerToFiles';
+import resolvePath from './resolvePath';
+
+import packageJson from './package.json';
 
 export type CliOptions = {
   input: string,
@@ -123,7 +125,7 @@ if (options.force) {
 const jsonFile: OpenAPI = JSON.parse(fs.readFileSync(options.input, 'utf-8'));
 convertSwaggerToFiles(jsonFile, options);
 browserify({ standalone: camelCase(options.name) })
-  .transform('babelify', { presets: [ es2015, react, stage0 ] })
+  .transform('babelify', { presets: [es2015, react, stage0] })
   .add(path.join(options.output, './index.js'))
   .bundle()
   .pipe(fs.createWriteStream(path.join(options.output, './dist/index.js')));
