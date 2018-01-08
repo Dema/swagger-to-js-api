@@ -12,6 +12,10 @@ var _babelPresetEs = require('babel-preset-es2015');
 
 var _babelPresetEs2 = _interopRequireDefault(_babelPresetEs);
 
+var _transformEs2015ModulesUmd = require('transform-es2015-modules-umd');
+
+var _transformEs2015ModulesUmd2 = _interopRequireDefault(_transformEs2015ModulesUmd);
+
 var _fs = require('fs');
 
 var _fs2 = _interopRequireDefault(_fs);
@@ -101,6 +105,7 @@ var optionDefs = [{
   defaultOption: false
 }];
 
+
 var usageGuide = [{
   header: 'Swagger to Javascript API generator',
   content: 'Takes a Swagger JSON file and generates UMD NPM and bower package to be used in Javascript applications.'
@@ -156,4 +161,4 @@ if (options.basePath) {
 
 (0, _convertSwaggerToFiles2.default)(swaggerSpec, options);
 
-(0, _browserify2.default)({ standalone: (0, _lodash.camelCase)(options.name) }).transform('babelify', { presets: [_babelPresetEs2.default, _babelPresetFlow2.default, _babelPresetStage2.default], babelrc: false }).add(_path2.default.join(options.output, './index.js')).bundle().pipe(_fs2.default.createWriteStream(_path2.default.join(options.output, './dist/index.js')));
+(0, _browserify2.default)({ standalone: (0, _lodash.camelCase)(options.name) }).transform('babelify', { presets: [_babelPresetEs2.default, _babelPresetFlow2.default, _babelPresetStage2.default], plugins: [_transformEs2015ModulesUmd2.default], babelrc: false }).add(_path2.default.join(options.output, './index.js')).bundle().pipe(_fs2.default.createWriteStream(_path2.default.join(options.output, './dist/index.js')));
