@@ -11,6 +11,6 @@ export default class AjaxPipe<In, Out> {
   url: string;
   data: any;
 
-  pipeThrough = async (fn: Function): Promise<{ data: Out, status: number }> =>
-    await fn(this);
+  pipeThrough = (fn: Function): Promise<{ data: Out, status: number }> =>
+    fn(this);
 }
