@@ -9,12 +9,11 @@ import * as babel from 'babel-core';
 import { default as generate } from 'babel-generator';
 import es2015 from 'babel-preset-es2015';
 import stage0 from 'babel-preset-stage-0';
-import react from 'babel-preset-react';
+import flow from 'babel-preset-flow';
 import flatten from 'array-flatten';
 import { Set as ImmutableSet } from 'immutable';
 import { List as ImmutableList } from 'immutable';
 
-import flow from 'babel-plugin-transform-flow-strip-types';
 import swaggerTypeToFlowType from './swaggerTypeToFlowType';
 import { uniq } from 'lodash';
 import chalk from 'chalk';
@@ -29,36 +28,13 @@ const writeHelperFile = (
   transformExt: string,
 ): void =>
   {
-    // Read the helper file included in this project.
-    const code = fs.readFileSync(
-      path.join(__dirname, './helpers/', filename),
-      'utf-8',
-    );
-
-    // Write it out into generated project, potentially changing the ext.
-    fs.writeFileSync(
-      path.join(
-        options.output,
-        'helpers/',
-        filename.replace(/\.js$/, `.${sourceExt}`),
-      ),
-      code,
-    );
-
-    // If we want to transform the generated code, transform the helper too.
-    if (options.transform) {
-      fs.writeFileSync(
-        path.join(
-          options.output,
-          'helpers/',
-          filename.replace(/\.js$/, `.${transformExt}`),
-        ),
-        babel.transform(code, {
-          presets: [ react, es2015, stage0 ],
-          plugins: [ flow ],
-        }).code,
+    // Copy helpers, both compiled and original
+    [ '.js', '.js.flow' ].forEach(ext => {
+      fs.copyFileSync(
+        path.join(__dirname, './helpers/', filename + ext),
+        path.join(options.output, 'helpers/', filename + ext),
       );
-    }
+    });
   };
 
 export default function(swaggerObj: OpenAPI, options: CliOptions) {
@@ -118,10 +94,10 @@ export default function(swaggerObj: OpenAPI, options: CliOptions) {
   const sourceExt = options.transform ? 'js.flow' : 'js';
   const transformExt = 'js';
 
-  writeHelperFile('AjaxPipe.js', options, sourceExt, transformExt);
-  writeHelperFile('AjaxObject.js', options, sourceExt, transformExt);
-  writeHelperFile('makeQuery.js', options, sourceExt, transformExt);
-  writeHelperFile('makeFormData.js', options, sourceExt, transformExt);
+  writeHelperFile('AjaxPipe', options, sourceExt, transformExt);
+  writeHelperFile('AjaxObject', options, sourceExt, transformExt);
+  writeHelperFile('makeQuery', options, sourceExt, transformExt);
+  writeHelperFile('makeFormData', options, sourceExt, transformExt);
 
   const typePaths = [];
 
@@ -149,7 +125,11 @@ export default function(swaggerObj: OpenAPI, options: CliOptions) {
       .map(typeDef => {
         const name = typeDef.name;
         const imports = [];
-        return [ name, swaggerTypeToFlowType(typeDef, imports), imports ];
+        return [
+          name,
+          swaggerTypeToFlowType(typeDef, imports, swaggerObj.definitions),
+          imports,
+        ];
       })
       .map(tuple => {
         let name = tuple[0];
@@ -223,10 +203,7 @@ export default function(swaggerObj: OpenAPI, options: CliOptions) {
     paths
       .map(([ name, code ]) => [
         name,
-        babel.transform(code, {
-          presets: [ react, es2015, stage0 ],
-          plugins: [ flow ],
-        }).code,
+        babel.transform(code, { presets: [ flow, es2015, stage0 ] }).code,
       ])
       .forEach(arr => {
         let name = arr[0];
@@ -262,8 +239,7 @@ export default function(swaggerObj: OpenAPI, options: CliOptions) {
   );
   if (options.transform) {
     const transformedIndex = babel.transform(indexFile, {
-      presets: [ react, es2015, stage0 ],
-      plugins: [ flow ],
+      presets: [ flow, es2015, stage0 ],
     }).code;
     fs.writeFileSync(
       path.join(options.output, `index.${transformExt}`),
@@ -275,7 +251,7 @@ export default function(swaggerObj: OpenAPI, options: CliOptions) {
   // Write a flow configuration file into the generated output.
   fs.writeFileSync(
     path.join(options.output, `.flowconfig`),
-    fs.readFileSync(path.join(__dirname, '.flowconfig'), 'utf-8'),
+    fs.readFileSync(path.join(__dirname, '..', '.flowconfig'), 'utf-8'),
     'utf-8',
   );
 

@@ -6,7 +6,11 @@ import swaggerTypeToFlowType from './swaggerTypeToFlowType';
 
 import type { OpenAPI } from 'openapi-flowtype-definition';
 
-export default function(pathObj: Object, swaggerObj: OpenAPI) {
+export default function(
+  pathObj: Object,
+  swaggerObj: OpenAPI,
+  overrideBaseURL: ?string = undefined,
+) {
   const hostname = swaggerObj.schemes != null && swaggerObj.host != null
     ? `${swaggerObj.schemes[0]}://${swaggerObj.host}`
     : null;

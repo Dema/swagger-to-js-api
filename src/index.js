@@ -7,7 +7,7 @@ import fs from 'fs';
 import parseArgs from 'command-line-args';
 import path from 'path';
 import printUsage from 'command-line-usage';
-import react from 'babel-preset-react';
+import flow from 'babel-preset-flow';
 import rimraf from 'rimraf';
 import stage0 from 'babel-preset-stage-0';
 import type { OpenAPI } from 'openapi-flowtype-definition';
@@ -15,8 +15,6 @@ import yaml from 'js-yaml';
 
 import convertSwaggerToFiles from './convertSwaggerToFiles';
 import resolvePath from './resolvePath';
-
-import packageJson from './package.json';
 
 export type CliOptions = {
   input: string,
@@ -40,6 +38,16 @@ const optionDefs = [
     alias: 'o',
     description: 'Folder path To Output generator package to',
     type: String,
+  },
+  {
+    name: 'basePath',
+    alias: 'b',
+    description: 'Override basePath from swagger definition',
+    type: String,
+  },
+  {
+    name: 'ajax-library',
+    description: 'Use given ajax library to make requests instead of generic AjaxPipe. Possible values: axios',
   },
   {
     name: 'force',
@@ -89,7 +97,7 @@ options.version = options.version ||
   `1.0.${process.env.BUILD_NUMBER || Math.floor(Math.random() * 1000)}`;
 
 if (options.help) {
-  console.log(`swagger-to-js-api — v${packageJson.version}`);
+  console.log(`swagger-to-js-api`);
   console.log(printUsage(usageGuide));
   process.exit(1);
 }
@@ -122,10 +130,26 @@ if (options.force) {
     process.exit(1);
   }
 }
-const jsonFile: OpenAPI = JSON.parse(fs.readFileSync(options.input, 'utf-8'));
-convertSwaggerToFiles(jsonFile, options);
+const loadSwaggerDef = (filename: string): OpenAPI => {
+  const contents = fs.readFileSync(options.input, 'utf-8');
+  if (filename.endsWith('.json')) {
+    return JSON.parse(contents);
+  } else if (filename.endsWith('.yaml') || filename.endsWith('.yml')) {
+    return yaml.safeLoad(contents);
+  } else {
+    throw new Error('Unrecognized extension, try .json, .yaml, .yml');
+  }
+};
+
+const swaggerSpec: OpenAPI = loadSwaggerDef(options.input);
+if (options.basePath) {
+  swaggerSpec.basePath = options.basePath;
+}
+
+convertSwaggerToFiles(swaggerSpec, options);
+
 browserify({ standalone: camelCase(options.name) })
-  .transform('babelify', { presets: [es2015, react, stage0] })
+  .transform('babelify', { presets: [ es2015, flow, stage0 ], babelrc: false })
   .add(path.join(options.output, './index.js'))
   .bundle()
   .pipe(fs.createWriteStream(path.join(options.output, './dist/index.js')));
