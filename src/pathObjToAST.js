@@ -58,9 +58,7 @@ export default function(
       return assign({}, compiled, { mode: 'string' });
     }
     if (compiled.mode === 'string') {
-      compiled.quasis.push(
-        t.templateElement({ raw: current, cooked: current }),
-      );
+      compiled.quasis.push(t.templateElement({ raw: current, cooked: current }));
       return compiled;
     }
     if (compiled.mode === 'variable') {
@@ -317,9 +315,7 @@ export default function(
   });
   return [
     pathObj.operationId,
-    t.program(
-      imports.concat(typeImports).concat([responseType]).concat([fn]),
-    ),
+    t.program(imports.concat(typeImports).concat([responseType]).concat([fn])),
   ];
 }
 
@@ -334,3 +330,4 @@ function paramToName(param) {
   }
   return paramName;
 }
+

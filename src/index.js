@@ -149,7 +149,7 @@ if (options.basePath) {
 convertSwaggerToFiles(swaggerSpec, options);
 
 browserify({ standalone: camelCase(options.name) })
-  .transform('babelify', { presets: [ es2015, flow, stage0 ], babelrc: false })
+  .transform('babelify', { presets: [es2015, flow, stage0], babelrc: false })
   .add(path.join(options.output, './index.js'))
   .bundle()
   .pipe(fs.createWriteStream(path.join(options.output, './dist/index.js')));
