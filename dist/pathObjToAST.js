@@ -29,7 +29,7 @@ exports.default = function (pathObj, swaggerObj) {
 
   var responseType = {
     type: 'TypeAlias',
-    id: t.identifier('Response'),
+    id: t.identifier('AjaxResponse'),
     typeParameters: null,
     right: t.anyTypeAnnotation()
   };
@@ -145,7 +145,7 @@ exports.default = function (pathObj, swaggerObj) {
     return param.in === 'path' && param.required;
   }).map(paramToName)).concat(queryParams).concat(bodyParams), body);
 
-  fnStatement.returnType = t.typeAnnotation(t.genericTypeAnnotation(t.identifier('AjaxPipe'), t.typeParameterInstantiation([t.genericTypeAnnotation(t.identifier('AjaxObject'), null), t.genericTypeAnnotation(t.identifier('Response'), null)])));
+  fnStatement.returnType = t.typeAnnotation(t.genericTypeAnnotation(t.identifier('AjaxPipe'), t.typeParameterInstantiation([t.genericTypeAnnotation(t.identifier('AjaxObject'), null), t.genericTypeAnnotation(t.identifier('AjaxResponse'), null)])));
 
   var fn = t.exportDefaultDeclaration(fnStatement);
 

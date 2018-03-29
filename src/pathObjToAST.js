@@ -37,7 +37,7 @@ export default function(
 
   let responseType = {
     type: 'TypeAlias',
-    id: t.identifier('Response'),
+    id: t.identifier('AjaxResponse'),
     typeParameters: null,
     right: t.anyTypeAnnotation(),
   };
@@ -272,7 +272,7 @@ export default function(
       t.identifier('AjaxPipe'),
       t.typeParameterInstantiation([
         t.genericTypeAnnotation(t.identifier('AjaxObject'), null),
-        t.genericTypeAnnotation(t.identifier('Response'), null),
+        t.genericTypeAnnotation(t.identifier('AjaxResponse'), null),
       ]),
     ),
   );
