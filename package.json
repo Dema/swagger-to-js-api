@@ -1,6 +1,6 @@
 {
   "name": "swagger-to-js-api-dema",
-  "version": "1.3.3",
+  "version": "1.3.4",
   "description": "Takes a Swagger JSON API description and creates a Javascript API to call the endpoints. With Flow Types.",
   "main": "lib/bin/swagger-to-js-api.js",
   "bin": {
